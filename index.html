@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101820">
+<title>Morais Drive</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #101820;
+  color: white;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.logo {
+  color: #ff3030;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.version {
+  color: #aaa;
+  font-size: 11px;
+}
+
+.clock {
+  font-size: 48px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.date {
+  color: #aaa;
+  margin-bottom: 25px;
+}
+
+.car {
+  background: linear-gradient(135deg, #292f36, #171d24);
+  border: 1px solid #444;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.car h2 {
+  color: #ff4040;
+  margin-bottom: 8px;
+}
+
+.car p {
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.section-title {
+  margin: 25px 0 15px;
+  font-size: 17px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.app {
+  background: #252d36;
+  border: 1px solid #39434e;
+  border-radius: 16px;
+  padding: 23px 10px;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.app:active {
+  background: #414b57;
+}
+
+.emoji {
+  display: block;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.maintenance {
+  background: #252d36;
+  padding: 18px;
+  border-radius: 16px;
+  line-height: 2;
+  color: #ddd;
+}
+
+footer {
+  text-align: center;
+  color: #777;
+  font-size: 12px;
+  margin-top: 35px;
+  padding-bottom: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <div class="logo">MORAIS DRIVE</div>
+    <div class="version">SUA CENTRAL AUTOMOTIVA</div>
+  </div>
+  <div>🚗</div>
+</header>
+
+<div class="clock" id="clock">00:00</div>
+<div class="date" id="date"></div>
+
+<div class="car">
+  <h2>CHEVROLET ONIX</h2>
+  <p>
+    Modelo: 2014/2015<br>
+    Versão: 1.4 LT<br>
+    Cor: Branco<br>
+    Combustível: Flex<br>
+    Proprietário: Morais
+  </p>
+</div>
+
+<h3 class="section-title">APLICATIVOS</h3>
+
+<div class="grid">
+
+  <a class="app"
+  href="https://www.google.com/maps">
+    <span class="emoji">🗺️</span>
+    Google Maps
+  </a>
+
+  <a class="app"
+  href="https://www.youtube.com">
+    <span class="emoji">▶️</span>
+    YouTube
+  </a>
+
+  <a class="app"
+  href="https://open.spotify.com">
+    <span class="emoji">🎵</span>
+    Spotify
+  </a>
+
+  <a class="app"
+  href="tel:">
+    <span class="emoji">📞</span>
+    Telefone
+  </a>
+
+  <a class="app"
+  href="https://www.google.com/search?q=previs%C3%A3o+do+tempo">
+    <span class="emoji">🌤️</span>
+    Clima
+  </a>
+
+  <a class="app"
+  href="https://www.google.com/search?q=postos+de+combust%C3%ADvel+perto+de+mim">
+    <span class="emoji">⛽</span>
+    Combustível
+  </a>
+
+</div>
+
+<h3 class="section-title">CUIDADOS COM O VEÍCULO</h3>
+
+<div class="maintenance">
+  🔧 Revisão periódica<br>
+  🛞 Calibragem dos pneus<br>
+  🛢️ Verificação do óleo<br>
+  💧 Conferência do arrefecimento<br>
+  🔋 Verificação da bateria
+</div>
+
+<footer>
+  MORAIS DRIVE © 2026<br>
+  Desenvolvido para o seu Chevrolet Onix
+</footer>
+
+<script>
+function updateClock() {
+  const now = new Date();
+
+  document.getElementById("clock")
+    .textContent = now.toLocaleTimeString(
+      "pt-BR",
+      {hour: "2-digit", minute: "2-digit"}
+    );
+
+  document.getElementById("date")
+    .textContent = now.toLocaleDateString(
+      "pt-BR",
+      {weekday: "long", day: "2-digit",
+       month: "long", year: "numeric"}
+    );
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>
