@@ -132,8 +132,19 @@ footer {
   margin-top:30px;
 }
 </style>
+
+<link rel="manifest" href="./manifest.json">
 </head>
 
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .catch(error => console.error("Erro no Service Worker:", error));
+  });
+}
+</script>
 <body>
 
 <header>
