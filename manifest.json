@@ -1,0 +1,13 @@
+
+{
+  "name": "Morais Drive",
+  "short_name": "Morais Drive",
+  "description": "Central automotiva do Chevrolet Onix 1.4 LT",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#101820",
+  "theme_color": "#ff3434",
+  "lang": "pt-BR"
+}
