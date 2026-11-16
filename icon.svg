@@ -1,10 +1,9 @@
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#101820"/>
-  <path d="M90 290 L125 205 Q140 175 175 175 H337 Q372 175 387 205 L422 290 V365 H90 Z" fill="#ff3434"/>
-  <path d="M155 215 H357 L385 280 H127 Z" fill="#dce8f2"/>
-  <path d="M105 305 H407 V355 H105 Z" fill="#202a35"/>
-  <circle cx="160" cy="355" r="35" fill="#111820" stroke="#fff" stroke-width="12"/>
-  <circle cx="352" cy="355" r="35" fill="#111820" stroke="#fff" stroke-width="12"/>
-  <text x="256" y="455" font-family="Arial" font-size="62" font-weight="bold" text-anchor="middle" fill="#ff3434">MD</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+<rect width="192" height="192" rx="32" fill="#101820"/>
+<path d="M27 105l15-35q5-12 18-12h72q13 0 18 12l15 35v32H27z" fill="#ff3434"/>
+<path d="M55 66h82l12 29H43z" fill="#dce8f2"/>
+<circle cx="58" cy="132" r="14" fill="#101820" stroke="white" stroke-width="5"/>
+<circle cx="134" cy="132" r="14" fill="#101820" stroke="white" stroke-width="5"/>
+<text x="96" y="177" font-size="28" font-family="Arial" font-weight="bold" text-anchor="middle" fill="#ff3434">MD</text>
 </svg>
