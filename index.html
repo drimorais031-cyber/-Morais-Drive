@@ -1,364 +1,167 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101820">
 <title>Morais Drive</title>
-
+<link rel="manifest" href="manifest.json">
 <style>
-:root {
-  --bg:#101820;
-  --card:#202a35;
-  --card2:#293542;
-  --red:#ff3434;
-  --text:#f5f7fa;
-  --muted:#aab4bf;
-  --line:#3b4855;
-}
-* {box-sizing:border-box}
-body {
-  margin:0;
-  padding:18px;
-  padding-bottom:40px;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
-}
-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
-}
-.logo {font-size:25px;font-weight:900;color:var(--red)}
-.sub {font-size:10px;letter-spacing:2px;color:var(--muted)}
-.pill {
-  background:#382326;
-  color:#ff7777;
-  border:1px solid #743638;
-  padding:8px 12px;
-  border-radius:20px;
-  font-size:11px;
-}
-.clock {font-size:43px;font-weight:bold}
-.date {color:var(--muted);margin:4px 0 22px;text-transform:capitalize}
-.card {
-  background:linear-gradient(145deg,var(--card2),var(--card));
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:18px;
-  margin-bottom:16px;
-}
-.car-title {color:var(--red);font-size:20px;font-weight:bold}
-.car-info {color:#d0d7df;font-size:13px;line-height:1.8;margin-top:8px}
-.section-title {
-  font-size:15px;
-  margin:25px 0 12px;
-  letter-spacing:1px;
-}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:11px;
-}
-.app {
-  display:block;
-  text-align:center;
-  text-decoration:none;
-  color:white;
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:17px 8px;
-  font-size:13px;
-}
-.app span {display:block;font-size:29px;margin-bottom:8px}
-input,button {
-  width:100%;
-  border-radius:10px;
-  padding:12px;
-  font-size:14px;
-}
-input {
-  color:white;
-  background:#111a23;
-  border:1px solid var(--line);
-  margin:6px 0 12px;
-}
-label {font-size:12px;color:var(--muted)}
-button {
-  border:0;
-  background:var(--red);
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-button.secondary {background:#354352;margin-top:8px}
-.stat {
-  background:#111a23;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:13px;
-  margin-top:10px;
-}
-.stat small {color:var(--muted)}
-.stat strong {display:block;font-size:22px;margin-top:5px}
-.check {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:11px 0;
-  border-bottom:1px solid var(--line);
-  font-size:14px;
-}
-.check:last-child {border:0}
-.check input {width:20px;height:20px;margin:0;accent-color:var(--red)}
-.record {
-  background:#111a23;
-  padding:12px;
-  border-radius:10px;
-  margin-top:9px;
-  font-size:13px;
-  line-height:1.6;
-}
-.muted {color:var(--muted);font-size:12px}
-footer {
-  text-align:center;
-  color:#77818c;
-  font-size:11px;
-  line-height:1.8;
-  margin-top:30px;
-}
+*{box-sizing:border-box}
+body{margin:0;background:#101820;color:white;font-family:Arial,sans-serif;padding:16px}
+header{text-align:center;padding:12px;color:#ff4545}
+h1{margin:4px;font-size:28px}
+h2{font-size:19px;color:#ff4545}
+.card{background:#1c2933;padding:16px;border-radius:14px;margin:12px 0}
+input,select,button{width:100%;padding:12px;margin:6px 0;border:0;border-radius:8px;font-size:16px}
+button{background:#e93434;color:white;font-weight:bold}
+.car{font-size:75px;text-align:center;margin:10px}
+small{color:#b8c4ce}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item{background:#263743;padding:10px;border-radius:8px;margin:6px 0}
 </style>
-
-<link rel="manifest" href="./manifest.json">
 </head>
-
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js")
-      .catch(error => console.error("Erro no Service Worker:", error));
-  });
-}
-</script>
 <body>
-
 <header>
-  <div>
-    <div class="logo">MORAIS DRIVE</div>
-    <div class="sub">SUA CENTRAL AUTOMOTIVA</div>
-  </div>
-  <div class="pill">🚗 ONIX 1.4 LT</div>
+<h1>🚗 MORAIS DRIVE</h1>
+<small>Sua central automotiva</small>
 </header>
 
-<div class="clock" id="clock">00:00</div>
-<div class="date" id="date"></div>
-
 <section class="card">
-  <div class="car-title">CHEVROLET ONIX</div>
-  <div class="car-info">
-    Modelo: 2014/2015<br>
-    Versão: 1.4 LT<br>
-    Cor: Branco<br>
-    Combustível: Flex<br>
-    Proprietário: Morais
-  </div>
+<h2>Meu veículo</h2>
+<div class="car" id="car">🚘</div>
+<select id="modelo">
+<option>Chevrolet Onix</option><option>Chevrolet Prisma</option>
+<option>Chevrolet Celta</option><option>Hyundai HB20</option>
+<option>Volkswagen Gol</option><option>Volkswagen Polo</option>
+<option>Fiat Argo</option><option>Fiat Mobi</option>
+<option>Fiat Uno</option><option>Fiat Palio</option>
+<option>Renault Kwid</option><option>Toyota Corolla</option>
+<option>Honda Civic</option><option>Jeep Renegade</option>
+<option>Outro</option>
+</select>
+<select id="cor">
+<option value="#ffffff">Branco</option><option value="#aaa">Prata</option>
+<option value="#555">Cinza</option><option value="#111">Preto</option>
+<option value="#d22">Vermelho</option><option value="#1675cc">Azul</option>
+<option value="#27834a">Verde</option><option value="#e4c58b">Bege</option>
+<option value="#e9c900">Amarelo</option>
+</select>
+<input id="ano" placeholder="Ano do veículo" type="number">
+<input id="versao" placeholder="Versão (ex.: 1.4 LT)">
+<select id="combustivel"><option>Flex</option><option>Gasolina</option><option>Etanol</option><option>Diesel</option><option>Elétrico</option></select>
+<button onclick="salvarCarro()">Salvar veículo</button>
 </section>
 
-<h3 class="section-title">📱 ACESSO RÁPIDO</h3>
+<section class="card">
+<h2>📊 Painel</h2>
 <div class="grid">
-  <a class="app" href="https://www.google.com/maps" target="_blank" rel="noopener">
-    <span>🗺️</span>Google Maps
-  </a>
-  <a class="app" href="https://www.youtube.com" target="_blank" rel="noopener">
-    <span>▶️</span>YouTube
-  </a>
-  <a class="app" href="https://open.spotify.com" target="_blank" rel="noopener">
-    <span>🎵</span>Spotify
-  </a>
-  <a class="app" href="https://www.google.com/search?q=postos+perto+de+mim" target="_blank" rel="noopener">
-    <span>⛽</span>Postos próximos
-  </a>
-  <a class="app" href="https://www.google.com/search?q=previs%C3%A3o+do+tempo" target="_blank" rel="noopener">
-    <span>🌤️</span>Previsão do tempo
-  </a>
-  <a class="app" href="https://www.google.com/search?q=oficinas+mec%C3%A2nicas+perto+de+mim" target="_blank" rel="noopener">
-    <span>🔧</span>Oficinas
-  </a>
+<div class="item">Quilometragem<br><b id="kmPainel">0 km</b></div>
+<div class="item">Despesas<br><b id="totalPainel">R$ 0,00</b></div>
 </div>
-
-<h3 class="section-title">🛣️ QUILOMETRAGEM</h3>
-<section class="card">
-  <label for="odo">Quilometragem atual do veículo (km)</label>
-  <input id="odo" type="number" min="0" placeholder="Ex.: 152000">
-  <button onclick="saveOdo()">SALVAR QUILOMETRAGEM</button>
-  <div class="stat">
-    <small>Última quilometragem registrada</small>
-    <strong id="odoDisplay">Não informada</strong>
-  </div>
+<input id="km" type="number" placeholder="Quilometragem atual">
+<button onclick="salvarKm()">Atualizar quilometragem</button>
 </section>
 
-<h3 class="section-title">⛽ CONTROLE DE ABASTECIMENTO</h3>
 <section class="card">
-  <label for="fuelDate">Data</label>
-  <input id="fuelDate" type="date">
-
-  <label for="liters">Litros abastecidos</label>
-  <input id="liters" type="number" min="0.01" step="0.01" placeholder="Ex.: 35">
-
-  <label for="price">Valor total pago (R$)</label>
-  <input id="price" type="number" min="0.01" step="0.01" placeholder="Ex.: 180">
-
-  <label for="fuelOdo">Quilometragem no abastecimento</label>
-  <input id="fuelOdo" type="number" min="0" placeholder="Ex.: 152300">
-
-  <button onclick="addFuel()">REGISTRAR ABASTECIMENTO</button>
-
-  <div class="stat">
-    <small>Preço por litro do último registro</small>
-    <strong id="lastPrice">R$ 0,00</strong>
-  </div>
-  <div id="fuelHistory"></div>
-  <button class="secondary" onclick="clearFuel()">APAGAR HISTÓRICO DE ABASTECIMENTO</button>
+<h2>⛽ Abastecimento</h2>
+<input id="litros" type="number" step="0.01" placeholder="Litros">
+<input id="valorComb" type="number" step="0.01" placeholder="Valor pago (R$)">
+<input id="kmComb" type="number" placeholder="Quilometragem">
+<button onclick="adicionar('comb')">Registrar abastecimento</button>
+<div id="listaComb"></div>
 </section>
 
-<h3 class="section-title">🔧 CHECKLIST DE MANUTENÇÃO</h3>
 <section class="card">
-  <div id="checklist">
-    <label class="check"><input type="checkbox" data-key="oil"> Verificar óleo do motor</label>
-    <label class="check"><input type="checkbox" data-key="coolant"> Conferir líquido de arrefecimento</label>
-    <label class="check"><input type="checkbox" data-key="tires"> Conferir pneus e calibragem</label>
-    <label class="check"><input type="checkbox" data-key="brakes"> Verificar freios</label>
-    <label class="check"><input type="checkbox" data-key="battery"> Verificar bateria</label>
-    <label class="check"><input type="checkbox" data-key="lights"> Conferir iluminação</label>
-  </div>
-  <p class="muted">Marque os itens conferidos. As marcações ficam salvas neste aparelho.</p>
-  <button class="secondary" onclick="resetChecklist()">REINICIAR CHECKLIST</button>
+<h2>💰 Despesas</h2>
+<select id="categoria">
+<option>Combustível</option><option>Oficina</option><option>Peças</option>
+<option>Óleo e filtros</option><option>Pneus</option><option>Lavagem</option>
+<option>IPVA e licenciamento</option><option>Seguro</option><option>Multas</option><option>Outros</option>
+</select>
+<input id="descricao" placeholder="Descrição da despesa">
+<input id="valorDesp" type="number" step="0.01" placeholder="Valor (R$)">
+<button onclick="adicionar('desp')">Registrar despesa</button>
+<div id="listaDesp"></div>
 </section>
 
-<footer>
-  MORAIS DRIVE © 2026<br>
-  Desenvolvido para Chevrolet Onix 1.4 LT<br>
-  Use o celular somente com o veículo estacionado.
-</footer>
+<section class="card">
+<h2>🔧 Manutenção</h2>
+<input id="servico" placeholder="Serviço realizado">
+<input id="kmServico" type="number" placeholder="Quilometragem">
+<input id="valorServico" type="number" step="0.01" placeholder="Custo (R$)">
+<button onclick="adicionar('serv')">Registrar manutenção</button>
+<div id="listaServ"></div>
+</section>
+
+<section class="card">
+<h2>📁 Backup dos dados</h2>
+<button onclick="backup()">Exportar backup</button>
+<input type="file" id="arquivo" accept=".json">
+<button onclick="restaurar()">Restaurar backup</button>
+<small>Os registros ficam salvos neste aparelho. Faça backups regularmente.</small>
+</section>
 
 <script>
-const money = value => Number(value).toLocaleString("pt-BR", {
-  style:"currency",currency:"BRL"
+const ler=(k,d=[])=>JSON.parse(localStorage.getItem(k)||JSON.stringify(d));
+const gravar=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let dados={comb:ler('comb'),desp:ler('desp'),serv:ler('serv')};
+function dinheiro(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function salvarCarro(){
+['modelo','cor','ano','versao','combustivel'].forEach(k=>localStorage.setItem(k,document.getElementById(k).value));
+desenharCarro();alert('Veículo salvo!');
+}
+function desenharCarro(){
+let c=localStorage.getItem('cor')||'#fff';
+document.getElementById('car').innerHTML='<svg width="150" height="85" viewBox="0 0 180 100"><path d="M20 65 L35 35 Q40 25 55 25 H125 Q140 25 148 42 L160 65 V78 H20Z" fill="'+c+'" stroke="#aaa" stroke-width="3"/><path d="M50 32 H125 L140 55 H38Z" fill="#426071"/><circle cx="50" cy="76" r="13" fill="#111" stroke="#aaa" stroke-width="4"/><circle cx="135" cy="76" r="13" fill="#111" stroke="#aaa" stroke-width="4"/></svg>';
+}
+function salvarKm(){
+let v=document.getElementById('km').value;
+if(!v)return alert('Informe a quilometragem');
+localStorage.setItem('kmAtual',v);atualizar();
+}
+function adicionar(tipo){
+let obj={data:new Date().toLocaleDateString('pt-BR')};
+if(tipo==='comb'){
+obj.litros=litros.value;obj.valor=valorComb.value;obj.km=kmComb.value;
+if(!obj.litros||!obj.valor)return alert('Preencha litros e valor');
+}else if(tipo==='desp'){
+obj.categoria=categoria.value;obj.descricao=descricao.value;obj.valor=valorDesp.value;
+if(!obj.valor)return alert('Informe o valor');
+}else{
+obj.servico=servico.value;obj.km=kmServico.value;obj.valor=valorServico.value;
+if(!obj.servico)return alert('Informe o serviço');
+}
+dados[tipo].unshift(obj);gravar(tipo,dados[tipo]);
+['litros','valorComb','kmComb','descricao','valorDesp','servico','kmServico','valorServico'].forEach(k=>document.getElementById(k).value='');
+atualizar();
+}
+function atualizar(){
+['comb','desp','serv'].forEach(t=>{
+let el=document.getElementById('lista'+(t==='comb'?'Comb':t==='desp'?'Desp':'Serv'));
+el.innerHTML=dados[t].map(x=>'<div class="item">'+
+(t==='comb'?'⛽ '+x.litros+' litros | '+x.km+' km':
+t==='desp'?'💰 '+x.categoria+' | '+x.descricao:
+'🔧 '+x.servico+' | '+x.km+' km')+
+'<br>'+dinheiro(x.valor)+' | '+x.data+'</div>').join('');
 });
-
-function updateClock() {
-  const now = new Date();
-  document.getElementById("clock").textContent =
-    now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-  document.getElementById("date").textContent =
-    now.toLocaleDateString("pt-BR",{
-      weekday:"long",day:"2-digit",month:"long",year:"numeric"
-    });
+let total=dados.comb.concat(dados.desp,dados.serv).reduce((s,x)=>s+Number(x.valor||0),0);
+document.getElementById('totalPainel').textContent=dinheiro(total);
+document.getElementById('kmPainel').textContent=(localStorage.getItem('kmAtual')||'0')+' km';
 }
-updateClock();
-setInterval(updateClock,1000);
-
-function saveOdo() {
-  const value = Number(document.getElementById("odo").value);
-  if (!Number.isFinite(value) || value <= 0) {
-    alert("Digite uma quilometragem válida.");
-    return;
-  }
-  localStorage.setItem("morais_odo",String(value));
-  showOdo();
-  alert("Quilometragem salva!");
+function backup(){
+let blob=new Blob([JSON.stringify({dados,carro:Object.fromEntries(['modelo','cor','ano','versao','combustivel','kmAtual'].map(k=>[k,localStorage.getItem(k)]))},null,2)],{type:'application/json'});
+let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='morais-drive-backup.json';a.click();
 }
-function showOdo() {
-  const value = localStorage.getItem("morais_odo");
-  document.getElementById("odoDisplay").textContent =
-    value ? Number(value).toLocaleString("pt-BR")+" km" : "Não informada";
-  if (value) document.getElementById("odo").value = value;
+function restaurar(){
+let f=document.getElementById('arquivo').files[0];if(!f)return alert('Escolha um arquivo');
+let r=new FileReader();r.onload=()=>{
+try{let b=JSON.parse(r.result);dados=b.dados;Object.keys(dados).forEach(k=>gravar(k,dados[k]));if(b.carro)Object.entries(b.carro).forEach(([k,v])=>localStorage.setItem(k,v));location.reload();}
+catch(e){alert('Arquivo de backup inválido');}
+};r.readAsText(f);
 }
-showOdo();
-
-function getFuel() {
-  try {
-    return JSON.parse(localStorage.getItem("morais_fuel") || "[]");
-  } catch {
-    return [];
-  }
-}
-function addFuel() {
-  const date = document.getElementById("fuelDate").value;
-  const liters = Number(document.getElementById("liters").value);
-  const price = Number(document.getElementById("price").value);
-  const odo = Number(document.getElementById("fuelOdo").value);
-
-  if (!date || liters <= 0 || price <= 0 || odo <= 0 ||
-      !Number.isFinite(liters + price + odo)) {
-    alert("Preencha todos os campos com valores válidos.");
-    return;
-  }
-
-  const history = getFuel();
-  if (history.length && odo < history[0].odo) {
-    alert("A quilometragem precisa ser igual ou maior que o último registro.");
-    return;
-  }
-
-  history.unshift({date,liters,price,odo});
-  localStorage.setItem("morais_fuel",JSON.stringify(history));
-  document.getElementById("liters").value = "";
-  document.getElementById("price").value = "";
-  document.getElementById("fuelOdo").value = "";
-  renderFuel();
-  alert("Abastecimento registrado!");
-}
-function renderFuel() {
-  const history = getFuel();
-  const box = document.getElementById("fuelHistory");
-  box.innerHTML = "";
-
-  document.getElementById("lastPrice").textContent =
-    history.length ? money(history[0].price/history[0].liters) : money(0);
-
-  history.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "record";
-    div.textContent =
-      new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR") +
-      " | " + item.odo.toLocaleString("pt-BR") + " km | " +
-      item.liters.toLocaleString("pt-BR") + " L | " +
-      money(item.price) + " | " +
-      money(item.price/item.liters) + "/L";
-    box.appendChild(div);
-  });
-}
-function clearFuel() {
-  if (confirm("Deseja apagar todo o histórico de abastecimento?")) {
-    localStorage.removeItem("morais_fuel");
-    renderFuel();
-  }
-}
-document.getElementById("fuelDate").value =
-  new Date().toLocaleDateString("en-CA");
-renderFuel();
-
-document.querySelectorAll("#checklist input").forEach(input => {
-  const key = "morais_check_"+input.dataset.key;
-  input.checked = localStorage.getItem(key) === "true";
-  input.addEventListener("change",() => {
-    localStorage.setItem(key,String(input.checked));
-  });
-});
-function resetChecklist() {
-  if (confirm("Deseja desmarcar todos os itens?")) {
-    document.querySelectorAll("#checklist input").forEach(input => {
-      input.checked = false;
-      localStorage.removeItem("morais_check_"+input.dataset.key);
-    });
-  }
-}
+['modelo','cor','ano','versao','combustivel'].forEach(k=>{let v=localStorage.getItem(k);if(v!==null)document.getElementById(k).value=v;});
+desenharCarro();atualizar();
 </script>
 </body>
 </html>
