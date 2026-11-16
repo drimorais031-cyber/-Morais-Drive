@@ -1,0 +1,9 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+<rect width="192" height="192" rx="32" fill="#101820"/>
+<path d="M27 105l15-35q5-12 18-12h72q13 0 18 12l15 35v32H27z" fill="#ff3434"/>
+<path d="M55 66h82l12 29H43z" fill="#dce8f2"/>
+<circle cx="58" cy="132" r="14" fill="#101820" stroke="white" stroke-width="5"/>
+<circle cx="134" cy="132" r="14" fill="#101820" stroke="white" stroke-width="5"/>
+<text x="96" y="177" font-size="28" font-family="Arial" font-weight="bold" text-anchor="middle" fill="#ff3434">MD</text>
+</svg>
