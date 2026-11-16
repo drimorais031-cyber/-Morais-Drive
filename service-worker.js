@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "morais-drive-v2";
+const CACHE_NAME = "morais-drive-v3";
 
 const FILES = [
   "./",
