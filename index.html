@@ -684,8 +684,19 @@ clockUpdate();
 setInterval(clockUpdate,30000);
 
 function openScreen(id){
- document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
- $(id).classList.add('active');
+ const screen=$(id);
+
+ if(!screen){
+  alert('Tela não encontrada: '+id);
+  return;
+ }
+
+ document.querySelectorAll('.screen').forEach(s=>{
+  s.classList.remove('active');
+ });
+
+ screen.classList.add('active');
+
  if(id==='settings') loadVehicle();
  if(id==='vehicle') showKm();
  if(id==='fuel') renderFuel();
