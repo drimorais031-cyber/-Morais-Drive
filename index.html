@@ -739,20 +739,41 @@ function getArray(key){
  return Array.isArray(value)?value:[];
 }
 function addFuel(){
+
+function addFuel(){
  const date=$('fuelDate').value;
  const km=Number($('fuelKm').value);
  const liters=Number($('fuelLiters').value);
  const value=Number($('fuelValue').value);
- if(!date||km<=0||liters<=0||value<=0){alert('Preencha data, KM, litros e valor.');return;}
+ const full=$('fuelFull').checked;
+
+ if(!date||km<=0||liters<=0||value<=0){
+  alert('Preencha data, KM, litros e valor.');
+  return;
+ }
+
  const list=getArray('md_fuel');
- list.unshift({date,km,liters,value,type:$('fuelType').value});
+
+ list.unshift({
+  date,
+  km,
+  liters,
+  value,
+  type:$('fuelType').value,
+  full
+ });
+
  write('md_fuel',list);
+
  $('fuelKm').value='';
  $('fuelLiters').value='';
  $('fuelValue').value='';
+ $('fuelFull').checked=false;
+
  renderFuel();
  alert('Abastecimento registrado!');
 }
+ 
 function renderFuel(){
  const list=getArray('md_fuel');
  $('fuelList').innerHTML=list.length?list.map((item,i)=>`
