@@ -791,15 +791,78 @@ function addFuel(){
  alert('Abastecimento registrado!');
 }
  
+
 function renderFuel(){
  const list=getArray('md_fuel');
+
+ const money=value=>Number(value||0).toLocaleString('pt-BR',{
+  style:'currency',
+  currency:'BRL'
+ });
+
+ const total=list.reduce((sum,item)=>{
+  return sum+Number(item.value||0);
+ },0);
+
+ const ordered=[...list].sort((a,b)=>{
+  return Number(a.km||0)-Number(b.km||0);
+ });
+
+ const fulls=ordered.filter(item=>Boolean(item.full));
+
+ let totalDistance=0;
+ let totalLiters=0;
+ let totalIntervalCost=0;
+
+ for(let i=1;i<fulls.length;i++){
+  const previous=fulls[i-1];
+  const current=fulls[i];
+
+  const distance=Number(current.km)-Number(previous.km);
+
+  if(distance<=0) continue;
+
+  const interval=ordered.filter(item=>{
+   return Number(item.km)>=Number(previous.km) &&
+          Number(item.km)<=Number(current.km);
+  });
+
+  const liters=interval.reduce((sum,item)=>{
+   return sum+Number(item.liters||0);
+  },0);
+
+  const cost=interval.reduce((sum,item)=>{
+   return sum+Number(item.value||0);
+  },0);
+
+  if(liters>0){
+   totalDistance+=distance;
+   totalLiters+=liters;
+   totalIntervalCost+=cost;
+  }
+ }
+
+ $('fuelTotal').textContent=money(total);
+
+ if(totalDistance>0 && totalLiters>0){
+  $('fuelAverage').textContent=
+   (totalDistance/totalLiters).toFixed(2).replace('.',',')+' km/L';
+
+  $('fuelCostKm').textContent=
+   money(totalIntervalCost/totalDistance);
+ }else{
+  $('fuelAverage').textContent='Aguardando próximo tanque cheio';
+  $('fuelCostKm').textContent='Aguardando próximo tanque cheio';
+ }
+
  $('fuelList').innerHTML=list.length?list.map((item,i)=>`
   <div class="list-item">
-   <strong>${escapeHTML(item.type||'Combustível')} • R$ ${Number(item.value||0).toFixed(2).replace('.',',')}</strong>
-   <small>${escapeHTML(item.date||'')} • ${Number(item.km||0).toLocaleString('pt-BR')} km • ${Number(item.liters||0)} litros</small>
+   <strong>${escapeHTML(item.type||'Combustível')} • ${money(item.value)}</strong>
+   <small>${escapeHTML(item.date||'')} • ${Number(item.km||0).toLocaleString('pt-BR')} km • ${Number(item.liters||0)} litros • ${item.full?'Tanque cheio':'Abastecimento parcial'}</small>
    <button class="action alt" onclick="removeItem('md_fuel',${i})">Excluir registro</button>
   </div>`).join(''):'<p class="note">Nenhum abastecimento registrado.</p>';
 }
+
 function addExpense(){
  const name=$('expenseName').value.trim();
  const value=Number($('expenseValue').value);
