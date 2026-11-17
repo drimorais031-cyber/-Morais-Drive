@@ -276,30 +276,74 @@ input,select{
  width:19px;
  min-height:19px;
 }
+
 @media(max-width:650px){
- .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
- .tile{min-height:100px;padding:13px}
- .tile strong{font-size:13px}
- .greeting{align-items:flex-start;flex-direction:column}
- .dashboard{padding:16px}
-}
-@media(orientation:landscape) and (max-height:600px){
- .topbar{height:54px}
- .hero{inset:54px 0 0}
- .dashboard{
-  min-height:calc(100vh - 54px);
-  padding:10px 22px;
+ .tiles{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  padding:15px 0 20px;
  }
- .greeting{margin:3px 0 8px}
- .greeting h1{font-size:23px}
+ .tile{
+  min-height:105px;
+  padding:14px;
+  border-radius:18px;
+ }
+ .tile strong{font-size:14px}
+ .tile small{font-size:11px}
+ .greeting{
+  align-items:flex-start;
+  flex-direction:column;
+  margin:10px 0 15px;
+ }
+ .dashboard{padding:15px}
+ .car-bg{
+  width:115%;
+  height:65%;
+  top:8%;
+ }
+}
+
+@media(orientation:landscape) and (max-height:700px){
+ .topbar{
+  height:55px;
+  padding:0 25px;
+ }
+ .hero{inset:55px 0 0}
+ .dashboard{
+  min-height:calc(100vh - 55px);
+  padding:10px 25px 8px;
+ }
+ .greeting{
+  flex-direction:row;
+  align-items:center;
+  margin:2px 0 10px;
+ }
+ .greeting h1{font-size:24px}
+ .greeting p{font-size:12px}
  .tiles{
   grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:repeat(2,minmax(85px,1fr));
   gap:10px;
-  padding:8px 0 10px;
+  padding:5px 0 10px;
+  margin:auto 0;
  }
- .tile{min-height:75px;padding:10px}
- .tile .emoji{font-size:21px;margin-bottom:4px}
- .car-bg{height:85%;top:0}
+ .tile{
+  min-height:85px;
+  padding:12px 15px;
+  border-radius:16px;
+ }
+ .tile .emoji{
+  font-size:23px;
+  margin-bottom:5px;
+ }
+ .tile strong{font-size:14px}
+ .tile small{font-size:11px}
+ .car-bg{
+  width:min(1000px,100vw);
+  height:88%;
+  top:0;
+ }
+ .bottom{padding-bottom:2px}
 }
 </style>
 </head>
