@@ -1,167 +1,486 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101820">
-<title>Morais Drive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ff3434">
+<meta name="description" content="Morais Drive - controle completo do seu veículo">
 <link rel="manifest" href="manifest.json">
+<title>Morais Drive</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101820;color:white;font-family:Arial,sans-serif;padding:16px}
-header{text-align:center;padding:12px;color:#ff4545}
-h1{margin:4px;font-size:28px}
-h2{font-size:19px;color:#ff4545}
-.card{background:#1c2933;padding:16px;border-radius:14px;margin:12px 0}
-input,select,button{width:100%;padding:12px;margin:6px 0;border:0;border-radius:8px;font-size:16px}
-button{background:#e93434;color:white;font-weight:bold}
-.car{font-size:75px;text-align:center;margin:10px}
-small{color:#b8c4ce}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.item{background:#263743;padding:10px;border-radius:8px;margin:6px 0}
+:root {
+  --bg:#101820;
+  --card:#202a35;
+  --card2:#293542;
+  --red:#ff3434;
+  --text:#f5f7fa;
+  --muted:#aab4bf;
+  --line:#3b4855;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  padding:16px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+header {
+  text-align:center;
+  padding:12px 0 20px;
+}
+.logo {
+  color:var(--red);
+  font-size:27px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.subtitle {color:var(--muted);font-size:13px;margin-top:5px}
+.clock {font-size:25px;font-weight:bold;margin-top:17px}
+.date {color:var(--muted);font-size:13px;margin-top:4px}
+.card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:15px;
+}
+h2 {
+  font-size:17px;
+  margin:0 0 14px;
+  color:var(--red);
+}
+h3 {font-size:15px;margin:12px 0 8px}
+.vehicle {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+.car-photo {
+  width:100%;
+  height:190px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:12px;
+  padding:5px;
+}
+.car-info {
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.8;
+}
+.car-info strong {color:var(--text)}
+label {
+  display:block;
+  color:var(--muted);
+  font-size:13px;
+  margin:10px 0 5px;
+}
+input,select {
+  width:100%;
+  padding:12px;
+  border-radius:9px;
+  border:1px solid var(--line);
+  background:var(--card2);
+  color:white;
+  font-size:15px;
+}
+button,.button {
+  display:inline-block;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:0;
+  border-radius:9px;
+  background:var(--red);
+  color:white;
+  font-weight:bold;
+  font-size:14px;
+  text-align:center;
+  cursor:pointer;
+}
+button.secondary {background:var(--card2);border:1px solid var(--line)}
+.quick {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+.quick a {
+  background:var(--card2);
+  color:white;
+  text-decoration:none;
+  text-align:center;
+  padding:15px 7px;
+  border-radius:10px;
+  font-size:14px;
+}
+.quick a span {display:block;font-size:22px;margin-bottom:6px}
+.big-number {font-size:30px;font-weight:bold}
+.muted {color:var(--muted);font-size:13px}
+.item {
+  padding:11px 0;
+  border-bottom:1px solid var(--line);
+  font-size:14px;
+}
+.item:last-child {border:0}
+.item small {color:var(--muted)}
+.row {display:grid;grid-template-columns:1fr 1fr;gap:10px}
+footer {
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  padding:15px 0;
+}
+@media(min-width:650px) {
+  body {max-width:750px;margin:auto}
+  .vehicle {grid-template-columns:1fr 1fr;align-items:center}
+}
 </style>
 </head>
+
 <body>
 <header>
-<h1>🚗 MORAIS DRIVE</h1>
-<small>Sua central automotiva</small>
+  <div class="logo">MORAIS DRIVE</div>
+  <div class="subtitle">SEU CARRO. SEU CONTROLE.</div>
+  <div class="clock" id="clock">--:--:--</div>
+  <div class="date" id="date"></div>
 </header>
 
 <section class="card">
-<h2>Meu veículo</h2>
-<div class="car" id="car">🚘</div>
-<select id="modelo">
-<option>Chevrolet Onix</option><option>Chevrolet Prisma</option>
-<option>Chevrolet Celta</option><option>Hyundai HB20</option>
-<option>Volkswagen Gol</option><option>Volkswagen Polo</option>
-<option>Fiat Argo</option><option>Fiat Mobi</option>
-<option>Fiat Uno</option><option>Fiat Palio</option>
-<option>Renault Kwid</option><option>Toyota Corolla</option>
-<option>Honda Civic</option><option>Jeep Renegade</option>
-<option>Outro</option>
-</select>
-<select id="cor">
-<option value="#ffffff">Branco</option><option value="#aaa">Prata</option>
-<option value="#555">Cinza</option><option value="#111">Preto</option>
-<option value="#d22">Vermelho</option><option value="#1675cc">Azul</option>
-<option value="#27834a">Verde</option><option value="#e4c58b">Bege</option>
-<option value="#e9c900">Amarelo</option>
-</select>
-<input id="ano" placeholder="Ano do veículo" type="number">
-<input id="versao" placeholder="Versão (ex.: 1.4 LT)">
-<select id="combustivel"><option>Flex</option><option>Gasolina</option><option>Etanol</option><option>Diesel</option><option>Elétrico</option></select>
-<button onclick="salvarCarro()">Salvar veículo</button>
+  <h2>🚘 MEU VEÍCULO</h2>
+  <div class="vehicle">
+    <img id="carPhoto" class="car-photo"
+      src="https://commons.wikimedia.org/wiki/Special:FilePath/Chevrolet_Onix_1.4_LT_2014.jpg?width=1000"
+      alt="Foto do veículo selecionado"
+      onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900';">
+    <div>
+      <div class="car-info" id="carInfo"></div>
+      <label>Modelo do veículo</label>
+      <select id="carModel">
+        <option>Chevrolet Onix</option>
+        <option>Chevrolet Prisma</option>
+        <option>Hyundai HB20</option>
+        <option>Volkswagen Gol</option>
+        <option>Volkswagen Polo</option>
+        <option>Fiat Argo</option>
+        <option>Fiat Mobi</option>
+        <option>Renault Kwid</option>
+      </select>
+      <label>Ano/modelo</label>
+      <input id="carYear" value="2014/2015">
+      <label>Versão</label>
+      <input id="carVersion" value="1.4 LT">
+      <label>Cor</label>
+      <select id="carColor">
+        <option>Branco</option><option>Prata</option>
+        <option>Cinza</option><option>Preto</option>
+        <option>Vermelho</option><option>Azul</option>
+        <option>Verde</option><option>Bege</option>
+        <option>Amarelo</option>
+      </select>
+      <label>Combustível</label>
+      <select id="carFuel">
+        <option>Flex</option><option>Gasolina</option>
+        <option>Etanol</option><option>Diesel</option>
+        <option>Elétrico</option><option>Híbrido</option>
+      </select>
+    </div>
+  </div>
+  <button onclick="saveCar()">SALVAR VEÍCULO</button>
 </section>
 
 <section class="card">
-<h2>📊 Painel</h2>
-<div class="grid">
-<div class="item">Quilometragem<br><b id="kmPainel">0 km</b></div>
-<div class="item">Despesas<br><b id="totalPainel">R$ 0,00</b></div>
-</div>
-<input id="km" type="number" placeholder="Quilometragem atual">
-<button onclick="salvarKm()">Atualizar quilometragem</button>
+  <h2>⚡ ACESSO RÁPIDO</h2>
+  <div class="quick">
+    <a href="https://www.google.com/maps" target="_blank"><span>📍</span>Google Maps</a>
+    <a href="https://www.youtube.com" target="_blank"><span>▶️</span>YouTube</a>
+    <a href="https://open.spotify.com" target="_blank"><span>🎵</span>Spotify</a>
+    <a href="https://www.google.com/maps/search/postos+de+combustivel" target="_blank"><span>⛽</span>Postos próximos</a>
+    <a href="https://www.google.com/search?q=previs%C3%A3o+do+tempo" target="_blank"><span>🌤️</span>Previsão do tempo</a>
+    <a href="https://www.google.com/maps/search/oficinas+mecanicas" target="_blank"><span>🔧</span>Oficinas</a>
+  </div>
 </section>
 
 <section class="card">
-<h2>⛽ Abastecimento</h2>
-<input id="litros" type="number" step="0.01" placeholder="Litros">
-<input id="valorComb" type="number" step="0.01" placeholder="Valor pago (R$)">
-<input id="kmComb" type="number" placeholder="Quilometragem">
-<button onclick="adicionar('comb')">Registrar abastecimento</button>
-<div id="listaComb"></div>
+  <h2>📊 PAINEL DO VEÍCULO</h2>
+  <label>Quilometragem atual</label>
+  <input id="kmInput" type="number" placeholder="Ex.: 150000">
+  <button onclick="saveKm()">ATUALIZAR QUILOMETRAGEM</button>
+  <p class="muted">Quilometragem registrada:</p>
+  <div class="big-number" id="kmDisplay">0 km</div>
 </section>
 
 <section class="card">
-<h2>💰 Despesas</h2>
-<select id="categoria">
-<option>Combustível</option><option>Oficina</option><option>Peças</option>
-<option>Óleo e filtros</option><option>Pneus</option><option>Lavagem</option>
-<option>IPVA e licenciamento</option><option>Seguro</option><option>Multas</option><option>Outros</option>
-</select>
-<input id="descricao" placeholder="Descrição da despesa">
-<input id="valorDesp" type="number" step="0.01" placeholder="Valor (R$)">
-<button onclick="adicionar('desp')">Registrar despesa</button>
-<div id="listaDesp"></div>
+  <h2>⛽ ABASTECIMENTO</h2>
+  <div class="row">
+    <div><label>Data</label><input id="fuelDate" type="date"></div>
+    <div><label>Valor total (R$)</label><input id="fuelValue" type="number" step="0.01"></div>
+  </div>
+  <div class="row">
+    <div><label>Litros</label><input id="fuelLiters" type="number" step="0.01"></div>
+    <div><label>Preço por litro</label><input id="fuelPrice" type="number" step="0.001"></div>
+  </div>
+  <label>Quilometragem no abastecimento</label>
+  <input id="fuelKm" type="number">
+  <button onclick="addFuel()">REGISTRAR ABASTECIMENTO</button>
+  <div id="fuelList"></div>
 </section>
 
 <section class="card">
-<h2>🔧 Manutenção</h2>
-<input id="servico" placeholder="Serviço realizado">
-<input id="kmServico" type="number" placeholder="Quilometragem">
-<input id="valorServico" type="number" step="0.01" placeholder="Custo (R$)">
-<button onclick="adicionar('serv')">Registrar manutenção</button>
-<div id="listaServ"></div>
+  <h2>💰 DESPESAS DO VEÍCULO</h2>
+  <label>Descrição</label>
+  <input id="expenseName" placeholder="Ex.: troca de óleo">
+  <div class="row">
+    <div><label>Valor (R$)</label><input id="expenseValue" type="number" step="0.01"></div>
+    <div><label>Data</label><input id="expenseDate" type="date"></div>
+  </div>
+  <button onclick="addExpense()">REGISTRAR DESPESA</button>
+  <div id="expenseList"></div>
 </section>
 
 <section class="card">
-<h2>📁 Backup dos dados</h2>
-<button onclick="backup()">Exportar backup</button>
-<input type="file" id="arquivo" accept=".json">
-<button onclick="restaurar()">Restaurar backup</button>
-<small>Os registros ficam salvos neste aparelho. Faça backups regularmente.</small>
+  <h2>🔧 MANUTENÇÃO</h2>
+  <label>Serviço realizado ou necessário</label>
+  <input id="serviceName" placeholder="Ex.: troca de óleo">
+  <div class="row">
+    <div><label>Quilometragem</label><input id="serviceKm" type="number"></div>
+    <div><label>Data</label><input id="serviceDate" type="date"></div>
+  </div>
+  <button onclick="addService()">REGISTRAR MANUTENÇÃO</button>
+  <div id="serviceList"></div>
 </section>
+
+<section class="card">
+  <h2>✅ CHECKLIST DE MANUTENÇÃO</h2>
+  <div id="checklist"></div>
+</section>
+
+<section class="card">
+  <h2>💾 BACKUP DOS DADOS</h2>
+  <p class="muted">Salve uma cópia dos registros do aplicativo para não depender apenas do armazenamento do celular.</p>
+  <button onclick="exportBackup()">EXPORTAR BACKUP</button>
+  <label>Restaurar backup</label>
+  <input type="file" id="backupFile" accept=".json">
+  <button class="secondary" onclick="importBackup()">RESTAURAR BACKUP</button>
+</section>
+
+<footer> MORАIS DRIVE • Controle inteligente do seu veículo </footer>
 
 <script>
-const ler=(k,d=[])=>JSON.parse(localStorage.getItem(k)||JSON.stringify(d));
-const gravar=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-let dados={comb:ler('comb'),desp:ler('desp'),serv:ler('serv')};
-function dinheiro(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-function salvarCarro(){
-['modelo','cor','ano','versao','combustivel'].forEach(k=>localStorage.setItem(k,document.getElementById(k).value));
-desenharCarro();alert('Veículo salvo!');
+const $ = id => document.getElementById(id);
+const read = (key, fallback) => {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch(e) { return fallback; }
+};
+const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+function updateClock() {
+  const now = new Date();
+  $("clock").textContent = now.toLocaleTimeString("pt-BR");
+  $("date").textContent = now.toLocaleDateString("pt-BR", {
+    weekday:"long",day:"2-digit",month:"long",year:"numeric"
+  });
 }
-function desenharCarro(){
-let c=localStorage.getItem('cor')||'#fff';
-document.getElementById('car').innerHTML='<svg width="150" height="85" viewBox="0 0 180 100"><path d="M20 65 L35 35 Q40 25 55 25 H125 Q140 25 148 42 L160 65 V78 H20Z" fill="'+c+'" stroke="#aaa" stroke-width="3"/><path d="M50 32 H125 L140 55 H38Z" fill="#426071"/><circle cx="50" cy="76" r="13" fill="#111" stroke="#aaa" stroke-width="4"/><circle cx="135" cy="76" r="13" fill="#111" stroke="#aaa" stroke-width="4"/></svg>';
+setInterval(updateClock,1000);
+updateClock();
+
+const photos = {
+  "Chevrolet Onix":"https://commons.wikimedia.org/wiki/Special:FilePath/Chevrolet_Onix_1.4_LT_2014.jpg?width=1000",
+  "Chevrolet Prisma":"https://commons.wikimedia.org/wiki/Special:FilePath/Chevrolet_Prisma_20150814-DSC05638.JPG?width=1000",
+  "Hyundai HB20":"https://commons.wikimedia.org/wiki/Special:FilePath/BSB_03_2013_Hyundai_HB20_Flex_6206_blur.jpg?width=1000",
+  "Volkswagen Gol":"https://commons.wikimedia.org/wiki/Special:FilePath/VWGOLfrente.jpg?width=1000",
+  "Volkswagen Polo":"https://commons.wikimedia.org/wiki/Special:FilePath/Volkswagen_Polo.jpg?width=1000",
+  "Fiat Argo":"https://commons.wikimedia.org/wiki/Special:FilePath/Fiat_Argo.jpg?width=1000",
+  "Fiat Mobi":"https://commons.wikimedia.org/wiki/Special:FilePath/Fiat_Mobi.jpg?width=1000",
+  "Renault Kwid":"https://commons.wikimedia.org/wiki/Special:FilePath/Renault_Kwid.jpg?width=1000"
+};
+
+function loadCar() {
+  $("carModel").value = localStorage.getItem("modelo") || "Chevrolet Onix";
+  $("carYear").value = localStorage.getItem("ano") || "2014/2015";
+  $("carVersion").value = localStorage.getItem("versao") || "1.4 LT";
+  $("carColor").value = localStorage.getItem("cor") || "Branco";
+  $("carFuel").value = localStorage.getItem("combustivel") || "Flex";
+  updateCar();
 }
-function salvarKm(){
-let v=document.getElementById('km').value;
-if(!v)return alert('Informe a quilometragem');
-localStorage.setItem('kmAtual',v);atualizar();
+function updateCar() {
+  const model = $("carModel").value;
+  $("carPhoto").src = photos[model];
+  $("carInfo").innerHTML =
+    "<strong>" + model + "</strong><br>" +
+    "Ano: " + $("carYear").value +
+    "<br>Versão: " + $("carVersion").value +
+    "<br>Cor: " + $("carColor").value +
+    "<br>Combustível: " + $("carFuel").value;
 }
-function adicionar(tipo){
-let obj={data:new Date().toLocaleDateString('pt-BR')};
-if(tipo==='comb'){
-obj.litros=litros.value;obj.valor=valorComb.value;obj.km=kmComb.value;
-if(!obj.litros||!obj.valor)return alert('Preencha litros e valor');
-}else if(tipo==='desp'){
-obj.categoria=categoria.value;obj.descricao=descricao.value;obj.valor=valorDesp.value;
-if(!obj.valor)return alert('Informe o valor');
-}else{
-obj.servico=servico.value;obj.km=kmServico.value;obj.valor=valorServico.value;
-if(!obj.servico)return alert('Informe o serviço');
+function saveCar() {
+  localStorage.setItem("modelo",$("carModel").value);
+  localStorage.setItem("ano",$("carYear").value);
+  localStorage.setItem("versao",$("carVersion").value);
+  localStorage.setItem("cor",$("carColor").value);
+  localStorage.setItem("combustivel",$("carFuel").value);
+  updateCar();
+  alert("Veículo salvo com sucesso!");
 }
-dados[tipo].unshift(obj);gravar(tipo,dados[tipo]);
-['litros','valorComb','kmComb','descricao','valorDesp','servico','kmServico','valorServico'].forEach(k=>document.getElementById(k).value='');
-atualizar();
+["carModel","carYear","carVersion","carColor","carFuel"].forEach(id =>
+  $(id).addEventListener("change",updateCar)
+);
+
+function saveKm() {
+  const km = Number($("kmInput").value);
+  if (!Number.isFinite(km) || km < 0) return alert("Informe uma quilometragem válida.");
+  localStorage.setItem("kmAtual",km);
+  localStorage.setItem("morais_odo",km);
+  showKm();
 }
-function atualizar(){
-['comb','desp','serv'].forEach(t=>{
-let el=document.getElementById('lista'+(t==='comb'?'Comb':t==='desp'?'Desp':'Serv'));
-el.innerHTML=dados[t].map(x=>'<div class="item">'+
-(t==='comb'?'⛽ '+x.litros+' litros | '+x.km+' km':
-t==='desp'?'💰 '+x.categoria+' | '+x.descricao:
-'🔧 '+x.servico+' | '+x.km+' km')+
-'<br>'+dinheiro(x.valor)+' | '+x.data+'</div>').join('');
-});
-let total=dados.comb.concat(dados.desp,dados.serv).reduce((s,x)=>s+Number(x.valor||0),0);
-document.getElementById('totalPainel').textContent=dinheiro(total);
-document.getElementById('kmPainel').textContent=(localStorage.getItem('kmAtual')||'0')+' km';
+function showKm() {
+  const km = localStorage.getItem("kmAtual") || localStorage.getItem("morais_odo") || 0;
+  $("kmDisplay").textContent = Number(km).toLocaleString("pt-BR") + " km";
+  $("kmInput").value = km;
 }
-function backup(){
-let blob=new Blob([JSON.stringify({dados,carro:Object.fromEntries(['modelo','cor','ano','versao','combustivel','kmAtual'].map(k=>[k,localStorage.getItem(k)]))},null,2)],{type:'application/json'});
-let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='morais-drive-backup.json';a.click();
+
+function getArray(key) { return read(key,[]); }
+function addFuel() {
+  const value = Number($("fuelValue").value);
+  if (!value || value < 0) return alert("Informe o valor do abastecimento.");
+  const list = getArray("md_fuel");
+  list.unshift({
+    date:$("fuelDate").value || new Date().toISOString().slice(0,10),
+    value,
+    liters:Number($("fuelLiters").value) || 0,
+    price:Number($("fuelPrice").value) || 0,
+    km:Number($("fuelKm").value) || 0
+  });
+  write("md_fuel",list);
+  ["fuelValue","fuelLiters","fuelPrice","fuelKm"].forEach(id => $(id).value="");
+  renderFuel();
 }
-function restaurar(){
-let f=document.getElementById('arquivo').files[0];if(!f)return alert('Escolha um arquivo');
-let r=new FileReader();r.onload=()=>{
-try{let b=JSON.parse(r.result);dados=b.dados;Object.keys(dados).forEach(k=>gravar(k,dados[k]));if(b.carro)Object.entries(b.carro).forEach(([k,v])=>localStorage.setItem(k,v));location.reload();}
-catch(e){alert('Arquivo de backup inválido');}
-};r.readAsText(f);
+function renderFuel() {
+  $("fuelList").innerHTML = getArray("md_fuel").map((x,i) =>
+    `<div class="item"><strong>R$ ${x.value.toFixed(2)}</strong> • ${x.date}
+    <br><small>${x.liters || 0} litros • ${x.km || 0} km</small>
+    <button class="secondary" onclick="removeItem('md_fuel',${i},renderFuel)">Excluir</button></div>`
+  ).join("") || '<p class="muted">Nenhum abastecimento registrado.</p>';
 }
-['modelo','cor','ano','versao','combustivel'].forEach(k=>{let v=localStorage.getItem(k);if(v!==null)document.getElementById(k).value=v;});
-desenharCarro();atualizar();
+
+function addExpense() {
+  const name = $("expenseName").value.trim();
+  const value = Number($("expenseValue").value);
+  if (!name || !value || value < 0) return alert("Preencha a descrição e o valor.");
+  const list = getArray("md_expenses");
+  list.unshift({
+    name,value,
+    date:$("expenseDate").value || new Date().toISOString().slice(0,10)
+  });
+  write("md_expenses",list);
+  $("expenseName").value = "";
+  $("expenseValue").value = "";
+  renderExpenses();
+}
+function renderExpenses() {
+  $("expenseList").innerHTML = getArray("md_expenses").map((x,i) =>
+    `<div class="item"><strong>${escapeHtml(x.name)}</strong> • R$ ${x.value.toFixed(2)}
+    <br><small>${x.date}</small>
+    <button class="secondary" onclick="removeItem('md_expenses',${i},renderExpenses)">Excluir</button></div>`
+  ).join("") || '<p class="muted">Nenhuma despesa registrada.</p>';
+}
+
+function addService() {
+  const name = $("serviceName").value.trim();
+  if (!name) return alert("Informe o serviço.");
+  const list = getArray("md_services");
+  list.unshift({
+    name,
+    km:Number($("serviceKm").value) || 0,
+    date:$("serviceDate").value || new Date().toISOString().slice(0,10)
+  });
+  write("md_services",list);
+  $("serviceName").value = "";
+  $("serviceKm").value = "";
+  renderServices();
+}
+function renderServices() {
+  $("serviceList").innerHTML = getArray("md_services").map((x,i) =>
+    `<div class="item"><strong>${escapeHtml(x.name)}</strong>
+    <br><small>${x.date} • ${x.km || 0} km</small>
+    <button class="secondary" onclick="removeItem('md_services',${i},renderServices)">Excluir</button></div>`
+  ).join("") || '<p class="muted">Nenhuma manutenção registrada.</p>';
+}
+
+function removeItem(key,index,render) {
+  if (!confirm("Deseja excluir este registro?")) return;
+  const list = getArray(key);
+  list.splice(index,1);
+  write(key,list);
+  render();
+}
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+const checks = [
+  "Verificar nível do óleo do motor",
+  "Verificar água do reservatório",
+  "Conferir pressão dos pneus",
+  "Verificar estepe e ferramentas",
+  "Conferir luzes e faróis",
+  "Verificar freios",
+  "Conferir limpador de para-brisa"
+];
+function renderChecks() {
+  $("checklist").innerHTML = checks.map((item,i) =>
+    `<label><input type="checkbox" style="width:auto;margin-right:8px"
+    ${localStorage.getItem("morais_check_"+i)==="1"?"checked":""}
+    onchange="localStorage.setItem('morais_check_${i}',this.checked?'1':'0')">${item}</label>`
+  ).join("");
+}
+
+function exportBackup() {
+  const data = {};
+  for (let i=0;i<localStorage.length;i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "backup-morais-drive.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importBackup() {
+  const file = $("backupFile").files[0];
+  if (!file) return alert("Selecione um arquivo de backup.");
+  if (!confirm("A restauração substituirá os dados com as mesmas chaves. Deseja continuar?")) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      Object.keys(data).forEach(key => localStorage.setItem(key,data[key]));
+      alert("Backup restaurado. O aplicativo será atualizado.");
+      location.reload();
+    } catch(e) { alert("Arquivo de backup inválido."); }
+  };
+  reader.readAsText(file);
+}
+
+loadCar();
+showKm();
+renderFuel();
+renderExpenses();
+renderServices();
+renderChecks();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load",() => {
+    navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+  });
+}
 </script>
 </body>
 </html>
