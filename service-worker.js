@@ -2,7 +2,7 @@
 const CACHE_NAME = "morais-drive-v6";
 
 const FILES = [
-  "./",
+  "./file_000000007074820e94f75f049f6ee1fe.png",
   "./index.html",
   "./manifest.json",
   "./icon.svg",
