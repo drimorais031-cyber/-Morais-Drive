@@ -801,7 +801,6 @@ function addFuel(){
  alert('Abastecimento registrado!');
 }
  
-
 function renderFuel(){
  const list=getArray('md_fuel');
 
@@ -815,42 +814,42 @@ function renderFuel(){
  },0);
 
  const ordered=[...list].sort((a,b)=>{
-  return Number(a.km||0)-Number(b.km||0);
+  return String(a.date||'').localeCompare(String(b.date||'')) ||
+         Number(a.km||0)-Number(b.km||0);
  });
-
- const fulls=ordered.filter(item=>Boolean(item.full));
 
  let totalDistance=0;
  let totalLiters=0;
- let totalIntervalCost=0;
+ let totalCost=0;
+ let previousFull=null;
 
- for(let i=1;i<fulls.length;i++){
-  const previous=fulls[i-1];
-  const current=fulls[i];
+ ordered.forEach((item,index)=>{
+  if(!item.full) return;
 
-  const distance=Number(current.km)-Number(previous.km);
+  if(previousFull!==null){
+   const distance=Number(item.km)-Number(previousFull.km);
 
-  if(distance<=0) continue;
+   if(distance>0){
+    const interval=ordered.slice(previousFull.index+1,index+1);
 
-  const interval=ordered.filter(item=>{
-   return Number(item.km)>=Number(previous.km) &&
-          Number(item.km)<=Number(current.km);
-  });
+    const liters=interval.reduce((sum,entry)=>{
+     return sum+Number(entry.liters||0);
+    },0);
 
-  const liters=interval.reduce((sum,item)=>{
-   return sum+Number(item.liters||0);
-  },0);
+    const cost=interval.reduce((sum,entry)=>{
+     return sum+Number(entry.value||0);
+    },0);
 
-  const cost=interval.reduce((sum,item)=>{
-   return sum+Number(item.value||0);
-  },0);
-
-  if(liters>0){
-   totalDistance+=distance;
-   totalLiters+=liters;
-   totalIntervalCost+=cost;
+    if(liters>0){
+     totalDistance+=distance;
+     totalLiters+=liters;
+     totalCost+=cost;
+    }
+   }
   }
- }
+
+  previousFull={index,km:item.km};
+ });
 
  $('fuelTotal').textContent=money(total);
 
@@ -859,7 +858,7 @@ function renderFuel(){
    (totalDistance/totalLiters).toFixed(2).replace('.',',')+' km/L';
 
   $('fuelCostKm').textContent=
-   money(totalIntervalCost/totalDistance);
+   money(totalCost/totalDistance);
  }else{
   $('fuelAverage').textContent='Aguardando próximo tanque cheio';
   $('fuelCostKm').textContent='Aguardando próximo tanque cheio';
