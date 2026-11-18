@@ -56,6 +56,15 @@ button{cursor:pointer}
  color:var(--muted);
  font-size:14px;
 }
+ 
+.brand-logo{
+ width:58px;
+ height:58px;
+ object-fit:contain;
+ display:block;
+ filter:drop-shadow(0 0 8px rgba(255,48,59,.4));
+}
+ 
 .icon-btn{
  border:1px solid var(--line);
  background:#202a36;
@@ -370,7 +379,7 @@ input,select{
 <body>
 <div class="app">
 <header class="topbar">
- <div class="brand">MORAIS <b>DRIVE</b></div>
+<img class="brand-logo" src="morais-md-192.png" alt="MD">
  <div class="top-right">
   <span id="clock">--:--</span>
   <button class="icon-btn" onclick="openScreen('settings')">⚙</button>
