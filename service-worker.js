@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "morais-drive-v9";
+const CACHE_NAME = "morais-drive-v10";
 
 const FILES = [
   "./file_000000007074820e94f75f049f6ee1fe.png",
@@ -7,7 +7,9 @@ const FILES = [
   "./manifest.json",
   "./icon.svg",
   "./icon-192.svg",
-  "./icon-512.svg"
+  "./icon-512.svg",
+  "./morais-md-192.png",
+  "./morais-md-512(1).png"
 ];
 
 self.addEventListener("install", event => {
