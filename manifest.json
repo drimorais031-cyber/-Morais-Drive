@@ -3,7 +3,7 @@
   "id": "./",
   "name": "Morais Drive",
   "short_name": "Morais",
-  "description": "Central automotiva do Chevrolet Onix 1.4 LT",
+  "description": "Central automotiva Morais Drive",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -13,15 +13,15 @@
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "./icon-192.svg",
+      "src": "./morais-md-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512.svg",
+      "src": "./morais-md-512(1).png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
