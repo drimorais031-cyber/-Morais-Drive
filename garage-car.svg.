@@ -1,0 +1,27 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
+<defs>
+ <linearGradient id="vidro" x2="0" y2="1">
+  <stop stop-color="#40566b"/>
+  <stop offset="1" stop-color="#09121c"/>
+ </linearGradient>
+ <linearGradient id="farol">
+  <stop stop-color="#fff"/>
+  <stop offset="1" stop-color="#55caff"/>
+ </linearGradient>
+ <filter id="brilho">
+  <feGaussianBlur stdDeviation="9"/>
+ </filter>
+</defs>
+<ellipse cx="400" cy="430" rx="285" ry="22" fill="#000" opacity=".7"/>
+<path d="M155 310 Q170 190 270 145 Q320 120 400 120 Q480 120 530 145 Q630 190 645 310 L620 395 Q600 420 550 420 L250 420 Q200 420 180 395Z" fill="#111923" stroke="#8795a4" stroke-width="7"/>
+<path d="M255 185 Q300 140 350 140 L450 140 Q500 140 545 185 L585 275 L215 275Z" fill="url(#vidro)" stroke="#aab6c2" stroke-width="7"/>
+<path d="M400 145 L400 275" stroke="#8293a4" stroke-width="5"/>
+<path id="carroceria" d="M180 300 Q280 270 400 280 Q520 270 620 300 L640 365 Q610 395 550 400 L250 400 Q190 395 160 365Z" fill="#e8e8e8" stroke="#fff" stroke-width="6"/>
+<path d="M175 315 Q260 285 340 305 L320 345 Q245 355 165 345Z" fill="#0b1722" stroke="#81909e" stroke-width="6"/>
+<path d="M625 315 Q540 285 460 305 L480 345 Q555 355 635 345Z" fill="#0b1722" stroke="#81909e" stroke-width="6"/>
+<path d="M180 315 Q260 285 340 305 M620 315 Q540 285 460 305" stroke="url(#farol)" stroke-width="13" fill="none" filter="url(#brilho)"/>
+<path d="M180 315 Q260 285 340 305 M620 315 Q540 285 460 305" stroke="url(#farol)" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M330 360 Q400 345 470 360 L490 390 L310 390Z" fill="#101820" stroke="#9ba8b5" stroke-width="5"/>
+<path d="M270 410 L530 410" stroke="#ff303b" stroke-width="7" stroke-linecap="round"/>
+</svg>
