@@ -906,7 +906,7 @@ function updateColorPicker(color){
 function updateCarImage(){
  const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
  const color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
- const art=model==='Chevrolet Onix'?'./onix-garage.webp':makeCarArt(model,color);
+ const art=model==='Chevrolet Onix'?(color==='Branco'?'./file_000000007074820e94f75f049f6ee1fe.png':'./onix-garage.webp'):makeCarArt(model,color);
  $('heroCar').src=art;
  $('settingsCar').src=art;
  $('heroCar').style.objectFit='contain';
@@ -916,7 +916,7 @@ function updateCarImage(){
  $('vehicleChip').textContent='🚘 '+model.toUpperCase();
  if($('garageModelName'))$('garageModelName').textContent=model.toUpperCase();
  updateColorPicker(color);
- renderModelGallery(model);
+ renderModelGallery(model,color);
 }
 function loadVehicle(){
  $('modelo').value=localStorage.getItem('modelo')||'Chevrolet Onix';
