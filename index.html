@@ -815,44 +815,64 @@ const carPaint={
 };
 function makeCarArt(model,color){
  const paint=carPaint[color]||carPaint['Branco'];
- const isSmall=['Fiat Mobi','Renault Kwid'].includes(model);
- const isSedan=['Chevrolet Prisma'].includes(model);
- const isHatch=['Chevrolet Onix','Hyundai HB20','Volkswagen Gol','Volkswagen Polo','Fiat Argo'].includes(model);
- const roofY=isSmall?95:(isSedan?76:83);
- const hoodY=isSmall?178:(isSedan?168:173);
- const bodyBottom=isSedan?430:420;
- const grille=isSedan?'M190 285 Q300 300 410 285 L395 345 Q300 360 205 345 Z':'M205 285 Q300 300 395 285 L382 345 Q300 357 218 345 Z';
+ const compact=['Fiat Mobi','Renault Kwid'].includes(model);
+ const sedan=model==='Chevrolet Prisma';
+ const wide=model==='Chevrolet Onix'||model==='Hyundai HB20'||model==='Volkswagen Polo'||model==='Fiat Argo';
+ const roof=compact?112:(sedan?82:94);
+ const hood=compact?222:(sedan?205:213);
+ const lower=sedan?430:420;
+ const grille=sedan
+  ? 'M205 315 Q300 326 395 315 L382 367 Q300 382 218 367 Z'
+  : 'M215 315 Q300 326 385 315 L373 367 Q300 380 227 367 Z';
  const badge=model.includes('Chevrolet')?'✦':model.includes('Volkswagen')?'VW':model.includes('Hyundai')?'H':model.includes('Fiat')?'FIAT':'R';
- const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 470">
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 490">
  <defs>
-  <linearGradient id="paint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".75"/><stop offset=".24" stop-color="${paint}"/><stop offset=".72" stop-color="${paint}"/><stop offset="1" stop-color="#080b10"/></linearGradient>
-  <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#91b5cc"/><stop offset=".55" stop-color="#243b50"/><stop offset="1" stop-color="#0a111a"/></linearGradient>
-  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f7fbff"/><stop offset=".45" stop-color="#687786"/><stop offset="1" stop-color="#151c25"/></linearGradient>
-  <radialGradient id="lamp"><stop stop-color="#fffde0"/><stop offset=".35" stop-color="#fff4a6"/><stop offset="1" stop-color="#ffb52b" stop-opacity="0"/></radialGradient>
-  <filter id="glow"><feGaussianBlur stdDeviation="12"/></filter>
-  <filter id="shadow"><feGaussianBlur stdDeviation="12"/></filter>
+  <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".95"/><stop offset=".12" stop-color="${paint}"/><stop offset=".38" stop-color="${paint}"/><stop offset=".56" stop-color="#fff" stop-opacity=".24"/><stop offset=".78" stop-color="${paint}"/><stop offset="1" stop-color="#090d13"/></linearGradient>
+  <linearGradient id="hood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".45"/><stop offset=".22" stop-color="${paint}"/><stop offset=".72" stop-color="${paint}"/><stop offset="1" stop-color="#10151c"/></linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a9c8dc"/><stop offset=".22" stop-color="#38566d"/><stop offset=".72" stop-color="#142333"/><stop offset="1" stop-color="#070d15"/></linearGradient>
+  <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset=".22" stop-color="#aebdca"/><stop offset=".5" stop-color="#4b5a69"/><stop offset=".72" stop-color="#e6edf3"/><stop offset="1" stop-color="#394653"/></linearGradient>
+  <linearGradient id="lamp" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".35" stop-color="#fff7ce"/><stop offset=".7" stop-color="#f5c96b"/><stop offset="1" stop-color="#d98b28"/></linearGradient>
+  <radialGradient id="beam"><stop stop-color="#fff9d7" stop-opacity=".85"/><stop offset=".28" stop-color="#ffe9a0" stop-opacity=".35"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient>
+  <radialGradient id="floor"><stop stop-color="#526477" stop-opacity=".6"/><stop offset="1" stop-color="#101722" stop-opacity="0"/></radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="15"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  <filter id="shadow"><feGaussianBlur stdDeviation="9"/></filter>
  </defs>
- <ellipse cx="300" cy="420" rx="210" ry="25" fill="#000" opacity=".75" filter="url(#shadow)"/>
- <path d="M150 185 Q160 ${roofY} 235 ${roofY-20} L365 ${roofY-20} Q430 ${roofY-10} 450 185 L495 230 Q520 260 520 325 L500 ${bodyBottom} Q300 455 100 ${bodyBottom} L80 325 Q80 260 105 230 Z" fill="url(#paint)" stroke="#dce4ec" stroke-opacity=".55" stroke-width="5"/>
- <path d="M175 190 Q190 118 245 ${roofY+5} L355 ${roofY+5} Q410 120 425 190 Q300 210 175 190Z" fill="url(#glass)" stroke="#a9bdcc" stroke-width="5"/>
- <path d="M300 105 L300 198" stroke="#d5e2ed" stroke-opacity=".35" stroke-width="4"/>
- <path d="M115 235 Q300 215 485 235 L455 270 Q300 250 145 270Z" fill="#ffffff" opacity=".12"/>
- <path d="M100 250 Q150 225 220 240 L205 285 Q145 300 95 285Z" fill="#101820" stroke="#c7d5df" stroke-width="4"/>
- <path d="M500 250 Q450 225 380 240 L395 285 Q455 300 505 285Z" fill="#101820" stroke="#c7d5df" stroke-width="4"/>
- <ellipse cx="150" cy="267" rx="57" ry="28" fill="#fff5bb" opacity=".72" filter="url(#glow)"/>
- <ellipse cx="450" cy="267" rx="57" ry="28" fill="#fff5bb" opacity=".72" filter="url(#glow)"/>
- <path d="M100 250 Q145 228 213 241 L198 278 Q145 290 95 279Z" fill="#e9f4ff" stroke="#fff" stroke-width="4"/>
- <path d="M500 250 Q455 228 387 241 L402 278 Q455 290 505 279Z" fill="#e9f4ff" stroke="#fff" stroke-width="4"/>
- <path d="${grille}" fill="#10151c" stroke="url(#metal)" stroke-width="7"/>
- <path d="M225 314 Q300 322 375 314" fill="none" stroke="#65717e" stroke-width="5"/>
- <circle cx="300" cy="303" r="17" fill="#d9e1e8" stroke="#fff" stroke-width="3"/>
- <text x="300" y="309" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#27313d">${badge}</text>
- <path d="M115 350 Q300 385 485 350 L470 410 Q300 440 130 410Z" fill="#0d131b" stroke="#536170" stroke-width="5"/>
- <path d="M145 365 Q300 390 455 365" fill="none" stroke="#d7e0e8" stroke-opacity=".45" stroke-width="4"/>
- <rect x="250" y="385" width="100" height="24" rx="5" fill="#dce3e9" stroke="#fff" stroke-width="2"/>
- <text x="300" y="402" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#17202a">MORAIS</text>
- <path d="M90 315 L75 365 M510 315 L525 365" stroke="#e9f2fa" stroke-width="7" stroke-linecap="round"/>
- <text x="300" y="458" text-anchor="middle" font-family="Arial" font-size="13" letter-spacing="3" fill="#d9e1e8">${model.toUpperCase()}</text>
+ <ellipse cx="300" cy="444" rx="250" ry="35" fill="url(#floor)"/>
+ <ellipse cx="300" cy="440" rx="190" ry="18" fill="#000" opacity=".8" filter="url(#shadow)"/>
+ <!-- carroceria e para-lamas -->
+ <path d="M105 252 Q115 215 158 198 L185 154 Q203 ${roof+20} 254 ${roof} L346 ${roof} Q397 ${roof+8} 415 154 L442 198 Q485 215 495 252 L520 313 L503 ${lower} Q300 465 97 ${lower} L80 313 Z" fill="url(#body)" stroke="#dce6ee" stroke-opacity=".72" stroke-width="4"/>
+ <path d="M170 196 Q188 121 245 ${roof+4} L355 ${roof+4} Q412 121 430 196 Q300 216 170 196Z" fill="url(#glass)" stroke="#b9cbd8" stroke-width="5"/>
+ <path d="M300 ${roof+4} L300 202" stroke="#c7d7e3" stroke-opacity=".65" stroke-width="4"/>
+ <path d="M187 154 Q300 126 413 154" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="5"/>
+ <path d="M132 229 Q300 205 468 229" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="5"/>
+ <path d="M118 251 Q160 226 222 241 L204 291 Q151 304 105 284Z" fill="#111a24" stroke="url(#chrome)" stroke-width="5"/>
+ <path d="M482 251 Q440 226 378 241 L396 291 Q449 304 495 284Z" fill="#111a24" stroke="url(#chrome)" stroke-width="5"/>
+ <!-- fachos e luz projetada -->
+ <ellipse cx="148" cy="278" rx="110" ry="76" fill="url(#beam)" filter="url(#soft)"/>
+ <ellipse cx="452" cy="278" rx="110" ry="76" fill="url(#beam)" filter="url(#soft)"/>
+ <path d="M119 253 Q158 234 211 246 L194 280 Q150 291 108 279Z" fill="url(#lamp)" stroke="#fff" stroke-width="4"/>
+ <path d="M481 253 Q442 234 389 246 L406 280 Q450 291 492 279Z" fill="url(#lamp)" stroke="#fff" stroke-width="4"/>
+ <path d="M130 261 L195 260 M470 261 L405 260" stroke="#fff" stroke-width="3" opacity=".9"/>
+ <path d="M130 271 L188 272 M470 271 L412 272" stroke="#fff" stroke-width="2" opacity=".7"/>
+ <!-- capô com vincos -->
+ <path d="M205 215 Q300 198 395 215 L430 305 Q300 326 170 305Z" fill="url(#hood)" stroke="#fff" stroke-opacity=".18" stroke-width="3"/>
+ <path d="M220 218 Q205 262 202 300 M380 218 Q395 262 398 300" fill="none" stroke="#fff" stroke-opacity=".24" stroke-width="4"/>
+ <path d="M145 304 Q300 324 455 304" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="3"/>
+ <!-- grade frontal -->
+ <path d="${grille}" fill="#090e15" stroke="url(#chrome)" stroke-width="7"/>
+ <path d="M230 337 Q300 347 370 337 M237 350 Q300 359 363 350" fill="none" stroke="#667786" stroke-width="4"/>
+ <circle cx="300" cy="337" r="18" fill="url(#chrome)" stroke="#f7fbff" stroke-width="2"/>
+ <text x="300" y="342" text-anchor="middle" font-family="Arial" font-size="11" font-weight="900" fill="#17212c">${badge}</text>
+ <!-- para-choque e detalhes inferiores -->
+ <path d="M105 373 Q300 405 495 373 L478 423 Q300 455 122 423Z" fill="#111821" stroke="url(#chrome)" stroke-width="5"/>
+ <path d="M128 384 Q300 414 472 384" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4"/>
+ <path d="M170 408 Q300 428 430 408" fill="none" stroke="#657381" stroke-width="4"/>
+ <rect x="252" y="397" width="96" height="25" rx="4" fill="#dfe6ec" stroke="#fff" stroke-width="2"/>
+ <text x="300" y="414" text-anchor="middle" font-family="Arial" font-size="11" font-weight="900" letter-spacing="1" fill="#18212a">MD DRIVE</text>
+ <path d="M90 326 L80 370 M510 326 L520 370" stroke="#eaf4fc" stroke-width="6" stroke-linecap="round"/>
+ <path d="M150 187 Q300 170 450 187" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="3"/>
+ <text x="300" y="478" text-anchor="middle" font-family="Arial" font-size="12" font-weight="700" letter-spacing="3" fill="#e5edf4">${model.toUpperCase()}</text>
  </svg>`;
  return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
 }
