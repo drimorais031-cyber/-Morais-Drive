@@ -282,6 +282,37 @@ input,select{
  background:#202b38;
  border-radius:13px;
 }
+.garage-label{
+ display:flex;justify-content:space-between;align-items:center;gap:10px;
+ color:#aab4c2;font-size:10px;font-weight:800;letter-spacing:2px;margin:0 0 10px;
+}
+.garage-label span{color:#ff303b}
+.car-preview{
+ height:250px;
+ background:radial-gradient(ellipse at 50% 70%,#405064 0%,#202b38 55%,#111923 100%);
+ border:1px solid rgba(255,255,255,.1);
+}
+.color-picker{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;margin:12px 0 4px;
+}
+.color-swatch{
+ min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;
+ padding:7px 3px;border:1px solid transparent;border-radius:11px;
+ background:#202b38;color:#cbd3dd;font-size:9px;font-weight:700;
+}
+.color-swatch i{
+ width:27px;height:27px;border-radius:50%;display:block;
+ border:2px solid rgba(255,255,255,.65);box-shadow:0 3px 8px #0008;
+}
+.color-swatch.active{border-color:#ff303b;background:#33232a;color:#fff;box-shadow:0 0 12px #ff303b55}
+.garage-status{
+ display:flex;justify-content:space-between;align-items:center;gap:8px;
+ padding:10px 12px;margin-top:10px;border:1px solid rgba(255,48,59,.28);
+ border-radius:10px;background:#101821;color:#cbd3dd;font-size:11px;
+}
+.garage-status strong{color:#ff5962;letter-spacing:1px}
+@media(max-width:420px){.color-picker{gap:5px}.color-swatch{font-size:8px}.color-swatch i{width:24px;height:24px}.car-preview{height:215px}}
+
 .note{
  color:var(--muted);
  font-size:12px;
@@ -488,10 +519,12 @@ input,select{
   <button class="back" onclick="closeScreens()">✕ Fechar</button>
  </div>
  <div class="panel">
-  <h3>Meu veículo</h3>
-  <img id="settingsCar" class="car-preview" alt="Prévia do veículo">
+  <h3>Garagem • Personalize seu carro</h3>
+  <div class="garage-label"><span>GARAGEM MORais DRIVE</span><span>● AO VIVO</span></div>
+  <img id="settingsCar" class="car-preview" alt="Prévia estilizada frontal do veículo com faróis acesos">
+  <div class="garage-status"><span>VEÍCULO SELECIONADO</span><strong id="garageModelName">CHEVROLET ONIX</strong></div>
   <label>Modelo</label>
-  <select id="modelo">
+  <select id="modelo" onchange="updateCarImage()">
    <option>Chevrolet Onix</option>
    <option>Chevrolet Prisma</option>
    <option>Hyundai HB20</option>
@@ -514,15 +547,19 @@ input,select{
   <div class="grid2">
    <div>
     <label>Cor</label>
-    <select id="cor">
-     <option>Branco</option>
-     <option>Preto</option>
-     <option>Prata</option>
-     <option>Cinza</option>
-     <option>Vermelho</option>
-     <option>Azul</option>
-     <option>Outra</option>
+    <select id="cor" onchange="updateCarImage()" style="display:none">
+     <option>Branco</option><option>Preto</option><option>Prata</option>
+     <option>Cinza</option><option>Vermelho</option><option>Azul</option><option>Outra</option>
     </select>
+    <div class="color-picker" id="colorPicker" aria-label="Escolha a cor do veículo">
+     <button type="button" class="color-swatch" data-color="Branco" onclick="chooseCarColor('Branco')"><i style="background:#f2f3f4"></i>BRANCO</button>
+     <button type="button" class="color-swatch" data-color="Preto" onclick="chooseCarColor('Preto')"><i style="background:#15191f"></i>PRETO</button>
+     <button type="button" class="color-swatch" data-color="Prata" onclick="chooseCarColor('Prata')"><i style="background:#aeb8c2"></i>PRATA</button>
+     <button type="button" class="color-swatch" data-color="Cinza" onclick="chooseCarColor('Cinza')"><i style="background:#626d79"></i>CINZA</button>
+     <button type="button" class="color-swatch" data-color="Vermelho" onclick="chooseCarColor('Vermelho')"><i style="background:#e52335"></i>VERMELHO</button>
+     <button type="button" class="color-swatch" data-color="Azul" onclick="chooseCarColor('Azul')"><i style="background:#1767b1"></i>AZUL</button>
+     <button type="button" class="color-swatch" data-color="Outra" onclick="chooseCarColor('Outra')"><i style="background:linear-gradient(135deg,#23a7a0,#9a53c7,#e8b13d)"></i>ESPECIAL</button>
+    </div>
    </div>
    <div>
     <label>Combustível</label>
@@ -536,7 +573,7 @@ input,select{
    </div>
   </div>
   <button class="action" onclick="saveVehicle()">SALVAR VEÍCULO</button>
-  <p class="note">A imagem é ilustrativa e poderá ser substituída por uma foto específica do modelo escolhido.</p>
+  <p class="note">Escolha o modelo e teste as cores. A prévia muda na hora, como na garagem de um jogo. Depois toque em SALVAR VEÍCULO.</p>
  </div>
  <div class="panel">
   <h3>Sobre o aplicativo</h3>
@@ -772,26 +809,73 @@ function callNumber(){
  if(!number){alert('Digite um número de telefone.');return;}
  location.href='tel:'+number;
 }
-const carImages={
-'Chevrolet Onix':'file_000000007074820e94f75f049f6ee1fe.png',
- 'Chevrolet Prisma':'https://commons.wikimedia.org/wiki/Special:FilePath/Chevrolet_Prisma_20150814-DSC05638.JPG?width=1400',
- 'Hyundai HB20':'https://commons.wikimedia.org/wiki/Special:FilePath/BSB_03_2013_Hyundai_HB20_Flex_6206_blur.jpg?width=1400',
- 'Volkswagen Gol':'https://commons.wikimedia.org/wiki/Special:FilePath/VWGOLfrente.jpg?width=1400',
- 'Volkswagen Polo':'https://commons.wikimedia.org/wiki/Special:FilePath/Volkswagen_Polo.jpg?width=1400',
- 'Fiat Argo':'https://commons.wikimedia.org/wiki/Special:FilePath/Fiat_Argo.jpg?width=1400',
- 'Fiat Mobi':'https://commons.wikimedia.org/wiki/Special:FilePath/Fiat_Mobi.jpg?width=1400',
- 'Renault Kwid':'https://commons.wikimedia.org/wiki/Special:FilePath/Renault_Kwid.jpg?width=1400'
+const carPaint={
+ 'Branco':'#eef1f4','Preto':'#171c24','Prata':'#aeb8c2','Cinza':'#626d79',
+ 'Vermelho':'#df2638','Azul':'#1767b1','Outra':'#8b54b8'
 };
+function makeCarArt(model,color){
+ const paint=carPaint[color]||carPaint['Branco'];
+ const isSmall=['Fiat Mobi','Renault Kwid'].includes(model);
+ const isSedan=['Chevrolet Prisma'].includes(model);
+ const isHatch=['Chevrolet Onix','Hyundai HB20','Volkswagen Gol','Volkswagen Polo','Fiat Argo'].includes(model);
+ const roofY=isSmall?95:(isSedan?76:83);
+ const hoodY=isSmall?178:(isSedan?168:173);
+ const bodyBottom=isSedan?430:420;
+ const grille=isSedan?'M190 285 Q300 300 410 285 L395 345 Q300 360 205 345 Z':'M205 285 Q300 300 395 285 L382 345 Q300 357 218 345 Z';
+ const badge=model.includes('Chevrolet')?'✦':model.includes('Volkswagen')?'VW':model.includes('Hyundai')?'H':model.includes('Fiat')?'FIAT':'R';
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 470">
+ <defs>
+  <linearGradient id="paint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".75"/><stop offset=".24" stop-color="${paint}"/><stop offset=".72" stop-color="${paint}"/><stop offset="1" stop-color="#080b10"/></linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#91b5cc"/><stop offset=".55" stop-color="#243b50"/><stop offset="1" stop-color="#0a111a"/></linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f7fbff"/><stop offset=".45" stop-color="#687786"/><stop offset="1" stop-color="#151c25"/></linearGradient>
+  <radialGradient id="lamp"><stop stop-color="#fffde0"/><stop offset=".35" stop-color="#fff4a6"/><stop offset="1" stop-color="#ffb52b" stop-opacity="0"/></radialGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="12"/></filter>
+  <filter id="shadow"><feGaussianBlur stdDeviation="12"/></filter>
+ </defs>
+ <ellipse cx="300" cy="420" rx="210" ry="25" fill="#000" opacity=".75" filter="url(#shadow)"/>
+ <path d="M150 185 Q160 ${roofY} 235 ${roofY-20} L365 ${roofY-20} Q430 ${roofY-10} 450 185 L495 230 Q520 260 520 325 L500 ${bodyBottom} Q300 455 100 ${bodyBottom} L80 325 Q80 260 105 230 Z" fill="url(#paint)" stroke="#dce4ec" stroke-opacity=".55" stroke-width="5"/>
+ <path d="M175 190 Q190 118 245 ${roofY+5} L355 ${roofY+5} Q410 120 425 190 Q300 210 175 190Z" fill="url(#glass)" stroke="#a9bdcc" stroke-width="5"/>
+ <path d="M300 105 L300 198" stroke="#d5e2ed" stroke-opacity=".35" stroke-width="4"/>
+ <path d="M115 235 Q300 215 485 235 L455 270 Q300 250 145 270Z" fill="#ffffff" opacity=".12"/>
+ <path d="M100 250 Q150 225 220 240 L205 285 Q145 300 95 285Z" fill="#101820" stroke="#c7d5df" stroke-width="4"/>
+ <path d="M500 250 Q450 225 380 240 L395 285 Q455 300 505 285Z" fill="#101820" stroke="#c7d5df" stroke-width="4"/>
+ <ellipse cx="150" cy="267" rx="57" ry="28" fill="#fff5bb" opacity=".72" filter="url(#glow)"/>
+ <ellipse cx="450" cy="267" rx="57" ry="28" fill="#fff5bb" opacity=".72" filter="url(#glow)"/>
+ <path d="M100 250 Q145 228 213 241 L198 278 Q145 290 95 279Z" fill="#e9f4ff" stroke="#fff" stroke-width="4"/>
+ <path d="M500 250 Q455 228 387 241 L402 278 Q455 290 505 279Z" fill="#e9f4ff" stroke="#fff" stroke-width="4"/>
+ <path d="${grille}" fill="#10151c" stroke="url(#metal)" stroke-width="7"/>
+ <path d="M225 314 Q300 322 375 314" fill="none" stroke="#65717e" stroke-width="5"/>
+ <circle cx="300" cy="303" r="17" fill="#d9e1e8" stroke="#fff" stroke-width="3"/>
+ <text x="300" y="309" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#27313d">${badge}</text>
+ <path d="M115 350 Q300 385 485 350 L470 410 Q300 440 130 410Z" fill="#0d131b" stroke="#536170" stroke-width="5"/>
+ <path d="M145 365 Q300 390 455 365" fill="none" stroke="#d7e0e8" stroke-opacity=".45" stroke-width="4"/>
+ <rect x="250" y="385" width="100" height="24" rx="5" fill="#dce3e9" stroke="#fff" stroke-width="2"/>
+ <text x="300" y="402" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#17202a">MORAIS</text>
+ <path d="M90 315 L75 365 M510 315 L525 365" stroke="#e9f2fa" stroke-width="7" stroke-linecap="round"/>
+ <text x="300" y="458" text-anchor="middle" font-family="Arial" font-size="13" letter-spacing="3" fill="#d9e1e8">${model.toUpperCase()}</text>
+ </svg>`;
+ return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+}
+function chooseCarColor(color){
+ $('cor').value=color;
+ updateCarImage();
+}
+function updateColorPicker(color){
+ document.querySelectorAll('.color-swatch').forEach(button=>{
+  button.classList.toggle('active',button.dataset.color===color);
+ });
+}
 function updateCarImage(){
- const model=localStorage.getItem('modelo')||'Chevrolet Onix';
- const url=carImages[model]||carImages['Chevrolet Onix'];
- $('heroCar').src=url;
- $('settingsCar').src=url;
- $('heroCar').onerror=()=>{$('heroCar').style.display='none';};
- $('settingsCar').onerror=()=>{$('settingsCar').style.display='none';};
- $('heroCar').onload=()=>{$('heroCar').style.display='block';};
- $('settingsCar').onload=()=>{$('settingsCar').style.display='block';};
+ const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
+ const color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
+ const art=makeCarArt(model,color);
+ $('heroCar').src=art;
+ $('settingsCar').src=art;
+ $('heroCar').style.display='block';
+ $('settingsCar').style.display='block';
  $('vehicleChip').textContent='🚘 '+model.toUpperCase();
+ if($('garageModelName'))$('garageModelName').textContent=model.toUpperCase();
+ updateColorPicker(color);
 }
 function loadVehicle(){
  $('modelo').value=localStorage.getItem('modelo')||'Chevrolet Onix';
