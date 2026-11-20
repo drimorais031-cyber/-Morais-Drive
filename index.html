@@ -96,6 +96,7 @@ button{cursor:pointer}
  height:44px;
  font-size:21px;
 }
+.drive-banner{display:block;width:calc(100% - 32px);max-width:1500px;height:auto;max-height:190px;object-fit:cover;margin:14px auto 0;border:1px solid rgba(255,48,59,.65);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.5),0 0 18px rgba(255,30,50,.16)}
 .hero{
  position:absolute;
  inset:82px 0 0;
@@ -127,7 +128,7 @@ button{cursor:pointer}
  max-width:1200px;
  margin:auto;
  padding:22px;
- min-height:calc(100vh - 82px);
+ min-height:calc(100vh - 275px);
  position:relative;
  z-index:2;
  display:flex;
@@ -347,6 +348,7 @@ input,select{
   margin:10px 0 15px;
  }
  .dashboard{padding:15px}
+ .drive-banner{width:calc(100% - 20px);max-height:125px;margin-top:10px;border-radius:12px}
  .car-bg{
   width:115%;
   height:65%;
@@ -361,7 +363,7 @@ input,select{
  }
  .hero{inset:55px 0 0}
  .dashboard{
-  min-height:calc(100vh - 55px);
+  min-height:calc(100vh - 245px);
   padding:10px 25px 8px;
  }
  .greeting{
@@ -414,6 +416,7 @@ input,select{
  </div>
 </header>
 
+<img class="drive-banner" src="morais-drive-banner.svg" alt="Banner Morais Drive com carro de frente e faróis acesos">
 <div class="hero">
  <img id="heroCar" class="car-bg" alt="Carro selecionado">
 </div>
