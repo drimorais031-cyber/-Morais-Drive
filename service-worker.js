@@ -1,8 +1,9 @@
 
-const CACHE_NAME = "morais-drive-v12";
+const CACHE_NAME = "morais-drive-v13";
 
 const FILES = [
   "./file_000000007074820e94f75f049f6ee1fe.png",
+  "./file_00000000abac820eba582335ab5c8e6f.png",
   "./index.html",
   "./manifest.json",
   "./icon.svg",
