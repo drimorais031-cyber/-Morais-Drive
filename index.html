@@ -532,8 +532,7 @@ input,select{
   <div class="garage-status"><span>VEÍCULO SELECIONADO</span><strong id="garageModelName">CHEVROLET ONIX</strong></div>
   <div class="garage-models-title">ESCOLHA SEU MODELO</div>
   <div class="model-gallery" id="modelGallery" aria-label="Modelos disponíveis na garagem"></div>
-  <label>Modelo</label>
-  <select id="modelo" onchange="updateCarImage()">
+  <select id="modelo" onchange="updateCarImage()" style="display:none" aria-hidden="true" tabindex="-1">
    <option>Chevrolet Onix</option>
    <option>Hyundai HB20</option>
    <option>Volkswagen Gol</option>
