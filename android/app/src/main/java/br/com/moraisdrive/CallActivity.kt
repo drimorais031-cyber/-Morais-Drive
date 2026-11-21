@@ -2,19 +2,21 @@ package br.com.moraisdrive
 
 import android.app.Activity
 import android.os.Bundle
+import android.telecom.Call
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
-import android.telecom.Call
 
 class CallActivity : Activity() {
     private lateinit var callTitle: TextView
+    private lateinit var answerButton: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = android.graphics.Color.BLACK
         window.navigationBarColor = android.graphics.Color.BLACK
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -22,21 +24,24 @@ class CallActivity : Activity() {
             setBackgroundColor(android.graphics.Color.rgb(15, 15, 15))
         }
         callTitle = TextView(this).apply {
-            text = "CHAMADA"
             textSize = 26f
             gravity = Gravity.CENTER
             setTextColor(android.graphics.Color.WHITE)
         }
         root.addView(callTitle)
-        val answer = Button(this).apply {
+        answerButton = Button(this).apply {
             text = "ATENDER"
             setOnClickListener {
-                val call = CurrentCall.call
-                if (call?.state == Call.STATE_RINGING) call.answer(android.telecom.VideoProfile.STATE_AUDIO_ONLY)
+                CurrentCall.call?.takeIf { it.state == Call.STATE_RINGING }
+                    ?.answer(android.telecom.VideoProfile.STATE_AUDIO_ONLY)
                 refresh()
             }
         }
-        root.addView(answer)
+        root.addView(answerButton)
+        root.addView(Button(this).apply {
+            text = "ALTO-FALANTE"
+            setOnClickListener { CurrentCall.inCallService?.toggleSpeaker() }
+        })
         root.addView(Button(this).apply {
             text = "ENCERRAR / RECUSAR"
             setOnClickListener {
@@ -44,26 +49,29 @@ class CallActivity : Activity() {
                 finish()
             }
         })
-        root.addView(Button(this).apply {
-            text = "ALTO-FALANTE"
-            setOnClickListener {
-                val call = CurrentCall.call
-                if (call != null) {
-                    Toast.makeText(this@CallActivity, "Controle de áudio será conectado na próxima etapa.", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
         setContentView(root)
         refresh()
     }
 
+    override fun onResume() {
+        super.onResume()
+        refresh()
+    }
+
     private fun refresh() {
-        val call = CurrentCall.call ?: return
+        val call = CurrentCall.call
+        if (call == null) {
+            callTitle.text = "NENHUMA CHAMADA ATIVA"
+            answerButton.isEnabled = false
+            return
+        }
         callTitle.text = when (call.state) {
             Call.STATE_RINGING -> "CHAMADA RECEBIDA"
             Call.STATE_ACTIVE -> "EM LIGAÇÃO"
-            Call.STATE_DIALING -> "CHAMANDO"
+            Call.STATE_DIALING, Call.STATE_CONNECTING -> "CHAMANDO"
+            Call.STATE_DISCONNECTED -> "CHAMADA ENCERRADA"
             else -> "CHAMADA"
         }
+        answerButton.isEnabled = call.state == Call.STATE_RINGING
     }
 }
