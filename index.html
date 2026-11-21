@@ -473,6 +473,8 @@ input,select{
 .gps-car-thumb img{width:100%;height:100%;object-fit:contain}
 .gps-destination-pin{font-size:30px;filter:drop-shadow(0 2px 4px #000)}
 .gps-toolbar{display:flex;gap:7px;margin:7px 0}
+.gps-voice-on{border-color:#ff303b!important;color:#fff!important;background:#a71925!important}
+.gps-next-turn{font-size:12px;font-weight:700;color:#fff}
 .gps-toolbar button{flex:1;min-width:0;margin:0;padding:9px 5px;font-size:11px}
 #navigation.gps-fullscreen{padding:5px}
 #navigation.gps-fullscreen .screen-head{display:flex;margin:0 auto 4px;max-width:none;height:34px}
@@ -666,8 +668,8 @@ input,select{
   </div>
   <div id="driveMap" role="application" aria-label="Mapa e navegação Morais Drive"></div>
   <div class="gps-toolbar">
+   <button class="action alt" id="gpsVoiceBtn" onclick="toggleGpsVoice()">🔊 ATIVAR VOZ</button>
    <button class="action alt" onclick="recenterGps()">◎ CENTRALIZAR</button>
-   <button class="action alt" onclick="startGps()">📍 ATUALIZAR GPS</button>
    <button class="action alt" onclick="clearGpsRoute()">LIMPAR ROTA</button>
   </div>
   <div class="gps-info" id="gpsRouteInfo">Ative a localização e digite um destino. O GPS vai priorizar o resultado mais próximo de você.</div>
@@ -844,6 +846,7 @@ input,select{
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 let gpsMap=null,gpsMarker=null,gpsDestinationMarker=null,gpsRouteLayer=null,gpsWatchId=null,gpsCurrentPosition=null,gpsDestination=null,gpsLastRouteAt=0,gpsFollow=true,gpsLastHeading=0,gpsRouteData=null;
+let gpsVoiceEnabled=false,gpsVoiceSteps=[],gpsAnnouncedManeuvers=new Set(),gpsLastVoiceText="";
 function gpsSetStatus(message,accuracy=''){if($('gpsStatus'))$('gpsStatus').textContent=message;if($('gpsAccuracy'))$('gpsAccuracy').textContent=accuracy;}
 function initGpsMap(){
  if(gpsMap){setTimeout(()=>gpsMap.invalidateSize(),100);return;}
@@ -950,6 +953,8 @@ async function calculateGpsRoute(showStatus=true){
   const data=await response.json();if(data.code!=='Ok'||!data.routes?.length)throw new Error('Rota não encontrada');
   const route=data.routes[0],coords=route.geometry.coordinates.map(c=>[c[1],c[0]]);
   gpsRouteData=route;
+  gpsVoiceSteps=(route.legs||[]).flatMap(leg=>leg.steps||[]).filter(step=>step.maneuver&&step.maneuver.location);
+  if(gpsVoiceEnabled&&!gpsAnnouncedManeuvers.size)gpsSpeak("Rota calculada. "+(gpsVoiceSteps[0]?gpsManeuver(gpsVoiceSteps[0]):"Siga o trajeto indicado no mapa."));
   if(gpsRouteLayer)gpsMap.removeLayer(gpsRouteLayer);
   gpsRouteLayer=L.polyline(coords,{color:'#ff303b',weight:7,opacity:.95}).addTo(gpsMap);
   if($('gpsDistance'))$('gpsDistance').textContent=(route.distance/1000).toFixed(1).replace('.',',')+' km';
@@ -994,13 +999,41 @@ document.addEventListener('fullscreenchange',()=>{
  }
 });
 function clearGpsRoute(){
- gpsDestination=null;gpsRouteData=null;
+ gpsDestination=null;gpsRouteData=null;gpsVoiceSteps=[];gpsAnnouncedManeuvers.clear();gpsLastVoiceText="";
+ if(window.speechSynthesis)window.speechSynthesis.cancel();
  if(gpsRouteLayer&&gpsMap){gpsMap.removeLayer(gpsRouteLayer);gpsRouteLayer=null;}
  if(gpsDestinationMarker&&gpsMap){gpsMap.removeLayer(gpsDestinationMarker);gpsDestinationMarker=null;}
  if($('gpsDistance'))$('gpsDistance').textContent='--';
  if($('gpsEta'))$('gpsEta').textContent='--';
  if($('gpsRouteInfo'))$('gpsRouteInfo').textContent='Rota removida. Digite outro destino.';
  gpsSetStatus(gpsCurrentPosition?'Localização ativa':'GPS aguardando autorização.');
+}
+function gpsSpeak(message){
+ if(!gpsVoiceEnabled||!('speechSynthesis' in window)||!message)return;
+ const text=String(message).trim();if(!text||text===gpsLastVoiceText)return;
+ gpsLastVoiceText=text;window.speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(text);utterance.lang='pt-BR';utterance.rate=1;utterance.pitch=1;utterance.volume=1;
+ const voices=window.speechSynthesis.getVoices();
+ const voice=voices.find(v=>/^pt-BR$/i.test(v.lang))||voices.find(v=>/^pt/i.test(v.lang));if(voice)utterance.voice=voice;
+ window.speechSynthesis.speak(utterance);
+}
+function toggleGpsVoice(){
+ if(!('speechSynthesis' in window)){alert('Este navegador não oferece leitura de voz.');return;}
+ gpsVoiceEnabled=!gpsVoiceEnabled;const btn=$('gpsVoiceBtn');
+ if(btn){btn.textContent=gpsVoiceEnabled?'🔊 VOZ ATIVADA':'🔇 VOZ DESATIVADA';btn.classList.toggle('gps-voice-on',gpsVoiceEnabled);}
+ if(gpsVoiceEnabled){gpsLastVoiceText='';gpsSpeak(gpsVoiceSteps.length?'Navegação por voz ativada. '+gpsManeuver(gpsVoiceSteps[0]):'Navegação por voz ativada. Digite seu destino para iniciar a rota.');}
+ else{window.speechSynthesis.cancel();gpsLastVoiceText='';}
+}
+function gpsCheckNextManeuver(){
+ if(!gpsVoiceEnabled||!gpsCurrentPosition||!gpsVoiceSteps.length)return;
+ for(let i=0;i<gpsVoiceSteps.length;i++){
+  const step=gpsVoiceSteps[i],m=step.maneuver||{},type=m.type||'';
+  if(type==='depart'||type==='arrive')continue;
+  const key=[type,m.modifier||'',step.name||'',(m.location||[]).join(',')].join('|');
+  if(gpsAnnouncedManeuvers.has(key))continue;
+  const distance=gpsDistanceMeters(gpsCurrentPosition,m.location);
+  if(distance<=450){gpsAnnouncedManeuvers.add(key);const instruction=gpsManeuver(step);gpsSpeak((distance>180?'Em breve, ':'Agora, ')+instruction);if($('gpsRouteInfo'))$('gpsRouteInfo').innerHTML='<span class="gps-next-turn">🔊 '+gpsEscape(instruction)+'</span>';break;}
+ }
 }
 function stopGps(){if(gpsWatchId!==null&&navigator.geolocation){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}}
 </script>
