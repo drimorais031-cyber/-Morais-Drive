@@ -450,6 +450,28 @@ input,select{
 .gps-info strong{color:#ff5962}
 .leaflet-control-attribution{font-size:9px!important}
 @media(max-width:520px){.gps-search{grid-template-columns:1fr}.gps-search .action{width:100%}#driveMap{height:54vh;min-height:300px}}
+
+.gps-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.gps-toolbar button{flex:1;min-width:120px}
+.gps-live-stats{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
+.gps-stat{flex:1;min-width:90px;background:#0c141d;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.gps-stat strong{display:block;font-size:21px;color:#fff}
+.gps-stat span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.gps-car-marker{width:38px;height:38px;border:3px solid white;border-radius:50%;background:#ff303b;box-shadow:0 2px 12px #0009;display:flex;align-items:center;justify-content:center;color:white;font-size:23px;line-height:1}
+.gps-car-marker span{display:block;transform-origin:center;filter:drop-shadow(0 1px 2px #333)}
+#navigation.gps-fullscreen{position:fixed;inset:0;z-index:1000;background:#080c12;overflow:hidden;padding:8px}
+#navigation.gps-fullscreen .screen-head{display:flex;margin:0 auto 6px;max-width:none;height:38px}
+#navigation.gps-fullscreen .screen-head h2{font-size:16px;margin:0}
+#navigation.gps-fullscreen .gps-panel{max-width:none!important;height:calc(100dvh - 55px);height:calc(100vh - 55px);display:flex;flex-direction:column;gap:5px;padding:8px;margin:0;border:0}
+#navigation.gps-fullscreen .gps-panel>h3,
+#navigation.gps-fullscreen .gps-search,
+#navigation.gps-fullscreen .gps-panel>.gps-actions,
+#navigation.gps-fullscreen .gps-panel>.note{display:none}
+#navigation.gps-fullscreen #driveMap{height:auto;min-height:0;flex:1;border-radius:12px}
+#navigation.gps-fullscreen .gps-status{margin:2px 0}
+#navigation.gps-fullscreen .gps-toolbar{margin:0}
+#navigation.gps-fullscreen .gps-info{margin:0;padding:8px;font-size:13px}
+@media(max-width:520px){#navigation.gps-fullscreen{padding:5px}#navigation.gps-fullscreen .gps-panel{height:calc(100dvh - 48px);padding:5px}#navigation.gps-fullscreen #driveMap{min-height:0}}
 </style>
 </head>
 <body>
@@ -792,7 +814,7 @@ input,select{
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-let gpsMap=null,gpsMarker=null,gpsDestinationMarker=null,gpsRouteLayer=null,gpsWatchId=null,gpsCurrentPosition=null,gpsDestination=null,gpsLastRouteAt=0;
+let gpsMap=null,gpsMarker=null,gpsDestinationMarker=null,gpsRouteLayer=null,gpsWatchId=null,gpsCurrentPosition=null,gpsDestination=null,gpsLastRouteAt=0,gpsFollow=true,gpsLastHeading=0,gpsRouteData=null;
 function gpsSetStatus(message,accuracy=''){if($('gpsStatus'))$('gpsStatus').textContent=message;if($('gpsAccuracy'))$('gpsAccuracy').textContent=accuracy;}
 function initGpsMap(){
  if(gpsMap){setTimeout(()=>gpsMap.invalidateSize(),100);return;}
@@ -813,11 +835,17 @@ function startGps(){
 function gpsUpdatePosition(pos){
  gpsCurrentPosition=[pos.coords.longitude,pos.coords.latitude];
  const point=[pos.coords.latitude,pos.coords.longitude],accuracy=Math.round(pos.coords.accuracy||0);
- gpsSetStatus('Localização atualizada',accuracy?'Precisão aproximada: '+accuracy+' m':'');
- if(!gpsMarker)gpsMarker=L.circleMarker(point,{radius:9,color:'#fff',weight:3,fillColor:'#ff303b',fillOpacity:1}).addTo(gpsMap).bindPopup('Sua localização');
- else gpsMarker.setLatLng(point);
- if(!gpsDestination)gpsMap.setView(point,16);
- if(gpsDestination&&Date.now()-gpsLastRouteAt>15000)calculateGpsRoute(false);
+ const speed=pos.coords.speed==null?0:Math.max(0,pos.coords.speed*3.6);
+ if(pos.coords.heading!=null&&!Number.isNaN(pos.coords.heading))gpsLastHeading=pos.coords.heading;
+ if($('gpsSpeed'))$('gpsSpeed').textContent=Math.round(speed);
+ gpsSetStatus('GPS em movimento',accuracy?'Precisão: '+accuracy+' m':'');
+ if(!gpsMarker){
+  const icon=L.divIcon({className:'',html:'<div class="gps-car-marker"><span id="gpsCarArrow">▲</span></div>',iconSize:[38,38],iconAnchor:[19,19]});
+  gpsMarker=L.marker(point,{icon,zIndexOffset:1000}).addTo(gpsMap).bindPopup('Seu veículo');
+ }else gpsMarker.setLatLng(point);
+ const arrow=document.getElementById('gpsCarArrow');if(arrow)arrow.style.transform='rotate('+gpsLastHeading+'deg)';
+ if(gpsFollow)gpsMap.setView(point,gpsMap.getZoom()<15?16:gpsMap.getZoom(),{animate:true,duration:.4});
+ if(gpsDestination&&Date.now()-gpsLastRouteAt>20000)calculateGpsRoute(false);
 }
 function gpsHandleError(err){
  const messages={1:'Permissão negada. Autorize a localização nas configurações do navegador.',2:'Localização indisponível. Verifique o GPS do aparelho.',3:'Tempo esgotado. Tente novamente.'};
@@ -848,11 +876,14 @@ async function calculateGpsRoute(showStatus=true){
   const response=await fetch(url);if(!response.ok)throw new Error('Rota indisponível');
   const data=await response.json();if(data.code!=='Ok'||!data.routes?.length)throw new Error('Rota não encontrada');
   const route=data.routes[0],coords=route.geometry.coordinates.map(c=>[c[1],c[0]]);
+  gpsRouteData=route;
   if(gpsRouteLayer)gpsMap.removeLayer(gpsRouteLayer);
-  gpsRouteLayer=L.polyline(coords,{color:'#ff303b',weight:6,opacity:.9}).addTo(gpsMap);
-  gpsMap.fitBounds(gpsRouteLayer.getBounds(),{padding:[28,28]});
+  gpsRouteLayer=L.polyline(coords,{color:'#ff303b',weight:7,opacity:.95}).addTo(gpsMap);
+  if(gpsCurrentPosition)gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],17);
   const km=(route.distance/1000).toFixed(1).replace('.',','),mins=Math.max(1,Math.round(route.duration/60));
   const step=route.legs?.[0]?.steps?.find(s=>s.name||s.maneuver?.type);
+  if($('gpsDistance'))$('gpsDistance').textContent=km+' km';
+  if($('gpsEta'))$('gpsEta').textContent=mins+' min';
   $('gpsRouteInfo').innerHTML='<strong>'+km+' km</strong> • cerca de <strong>'+mins+' min</strong><br>'+gpsEscape(step?gpsManeuver(step):'Siga o trajeto indicado no mapa.');
   gpsSetStatus('Rota calculada');
  }catch(e){$('gpsRouteInfo').textContent='Não foi possível calcular a rota. Tente novamente em instantes.';gpsSetStatus('Falha ao calcular rota.');}
@@ -863,10 +894,35 @@ function gpsManeuver(step){
  return (names[type]||'Continue')+(mods?' '+mods:'')+(step.name?' em '+step.name:'');
 }
 function gpsEscape(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function recenterGps(){
+ if(!gpsMap||!gpsCurrentPosition)return;
+ gpsFollow=true;gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],17,{animate:true});
+ gpsSetStatus('Acompanhando seu veículo');
+}
+function toggleGpsFullscreen(){
+ const screen=$('navigation');
+ if(!screen)return;
+ const entering=!screen.classList.contains('gps-fullscreen');
+ screen.classList.toggle('gps-fullscreen',entering);
+ const btn=$('gpsFullBtn');if(btn)btn.textContent=entering?'⛶ SAIR DA TELA CHEIA':'⛶ TELA CHEIA';
+ if(entering&&screen.requestFullscreen){screen.requestFullscreen().catch(()=>{});}
+ else if(!entering&&document.fullscreenElement&&document.exitFullscreen){document.exitFullscreen().catch(()=>{});}
+ setTimeout(()=>{if(gpsMap)gpsMap.invalidateSize();},250);
+}
+document.addEventListener('fullscreenchange',()=>{
+ const screen=$('navigation');if(!screen)return;
+ if(!document.fullscreenElement&&screen.classList.contains('gps-fullscreen')){
+  screen.classList.remove('gps-fullscreen');
+  if($('gpsFullBtn'))$('gpsFullBtn').textContent='⛶ TELA CHEIA';
+  setTimeout(()=>{if(gpsMap)gpsMap.invalidateSize();},200);
+ }
+});
 function clearGpsRoute(){
- gpsDestination=null;
+ gpsDestination=null;gpsRouteData=null;
  if(gpsDestinationMarker&&gpsMap){gpsMap.removeLayer(gpsDestinationMarker);gpsDestinationMarker=null;}
  if(gpsRouteLayer&&gpsMap){gpsMap.removeLayer(gpsRouteLayer);gpsRouteLayer=null;}
+ if($('gpsDistance'))$('gpsDistance').textContent='--';
+ if($('gpsEta'))$('gpsEta').textContent='--';
  $('gpsDestination').value='';$('gpsRouteInfo').textContent='Rota limpa. Digite um novo destino.';
  gpsSetStatus(gpsCurrentPosition?'GPS ativo':'GPS aguardando autorização.');
 }
