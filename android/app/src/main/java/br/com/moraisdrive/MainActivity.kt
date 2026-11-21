@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -62,7 +63,7 @@ class MainActivity : Activity() {
             setOnClickListener { requestDialerRole() }
         }, match())
         root.addView(TextView(this).apply {
-            text = "Compatível a partir do Android 6.0. Chamadas dependem de aparelho com telefonia e SIM ativo."
+            text = "Chamadas dependem de aparelho com telefonia, SIM ativo e permissões concedidas."
             textSize = 13f
             setTextColor(android.graphics.Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -90,7 +91,6 @@ class MainActivity : Activity() {
                     toast("Este aparelho não disponibilizou a função de telefone padrão.")
                 }
             } else {
-                val telecom = getSystemService(TELECOM_SERVICE) as TelecomManager
                 val changeDefault = Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
                     putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, packageName)
                 }
@@ -107,17 +107,44 @@ class MainActivity : Activity() {
             toast("Digite um número.")
             return
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), 101)
+            return
+        }
+        placeCall(value)
+    }
+
+    private fun placeCall(value: String) {
         try {
             val telecom = getSystemService(TELECOM_SERVICE) as TelecomManager
             telecom.placeCall(Uri.fromParts("tel", value, null), Bundle())
         } catch (e: SecurityException) {
-            toast("Defina o Morais Drive como telefone padrão e verifique as permissões de telefone.")
+            toast("Defina o Morais Drive como telefone padrão e verifique as permissões.")
         } catch (e: Exception) {
             toast("Não foi possível iniciar a chamada. Verifique o chip e a rede.")
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {\n        super.onRequestPermissionsResult(requestCode, permissions, grantResults)\n        if (requestCode == 101) {\n            if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) makeCall()\n            else toast("A permissão de telefone é necessária para realizar chamadas.")\n        }\n    }\n\n    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                placeCall(number.text.toString().trim())
+            } else {
+                toast("A permissão de telefone é necessária para realizar chamadas.")
+            }
+        }
+    }
 
-    private fun match() = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = 12 }
+    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+
+    private fun match() = LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT
+    ).apply { topMargin = 12 }
 }
