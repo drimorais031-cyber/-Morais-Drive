@@ -23,6 +23,7 @@ class MainActivity : Activity() {
     private var geoCallback: GeolocationPermissions.Callback? = null
     private var geoOrigin: String? = null
     private var pendingCallNumber: String? = null
+    private var pendingFileChooser: android.webkit.ValueCallback<Array<Uri>>? = null
     private val appUrl = "https://drimorais031-cyber.github.io/-Morais-Drive/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +40,7 @@ class MainActivity : Activity() {
             settings.loadsImagesAutomatically = true
             settings.javaScriptCanOpenWindowsAutomatically = false
             settings.allowFileAccess = false
-            settings.allowContentAccess = false
+            settings.allowContentAccess = true
             settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
             addJavascriptInterface(NativeBridge(), "MoraisNative")
             webViewClient = object : WebViewClient() {
@@ -64,6 +65,26 @@ class MainActivity : Activity() {
                 }
             }
             webChromeClient = object : WebChromeClient() {
+                override fun onShowFileChooser(
+                    view: WebView,
+                    filePathCallback: android.webkit.ValueCallback<Array<Uri>>,
+                    fileChooserParams: FileChooserParams
+                ): Boolean {
+                    pendingFileChooser?.onReceiveValue(null)
+                    pendingFileChooser = filePathCallback
+                    return try {
+                        val intent = fileChooserParams.createIntent().apply {
+                            type = "audio/*"
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                        }
+                        startActivityForResult(intent, REQUEST_AUDIO_FILES)
+                        true
+                    } catch (_: Exception) {
+                        pendingFileChooser = null
+                        toast("Não foi possível abrir os arquivos de música.")
+                        false
+                    }
+                }
                 override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
                     if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                         checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -159,6 +180,26 @@ class MainActivity : Activity() {
         }
     }
 
+    @Deprecated("Deprecated in Android, retained for WebView file chooser compatibility")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_AUDIO_FILES) {
+            val callback = pendingFileChooser
+            pendingFileChooser = null
+            if (callback != null) {
+                val results = if (resultCode == RESULT_OK) {
+                    val clip = data?.clipData
+                    when {
+                        clip != null -> Array(clip.itemCount) { i -> clip.getItemAt(i).uri }
+                        data?.data != null -> arrayOf(data.data!!)
+                        else -> null
+                    }
+                } else null
+                callback.onReceiveValue(results)
+            }
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
@@ -190,5 +231,6 @@ class MainActivity : Activity() {
         private const val REQUEST_CONTACTS = 102
         private const val REQUEST_CALL = 101
         private const val REQUEST_LOCATION = 103
+        private const val REQUEST_AUDIO_FILES = 104
     }
 }
