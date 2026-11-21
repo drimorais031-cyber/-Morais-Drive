@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#080c12">
 <link rel="manifest" href="manifest.json">
 <title>Morais Drive</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 :root {
  --bg:#080c12;
@@ -436,6 +437,19 @@ input,select{
  }
  .bottom{padding-bottom:2px}
 }
+
+.gps-panel{max-width:1100px!important}
+.gps-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin:12px 0}
+.gps-search input{min-width:0}
+.gps-actions{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
+.gps-actions .action{flex:1;min-width:145px}
+#driveMap{width:100%;height:min(58vh,560px);min-height:320px;border-radius:15px;border:1px solid rgba(255,255,255,.16);background:#17232d;z-index:1}
+.gps-status{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0;color:#dce5ee;font-size:13px}
+.gps-status strong{color:#fff}
+.gps-info{background:#0d151e;border:1px solid var(--line);padding:12px;border-radius:12px;margin-top:10px;line-height:1.5}
+.gps-info strong{color:#ff5962}
+.leaflet-control-attribution{font-size:9px!important}
+@media(max-width:520px){.gps-search{grid-template-columns:1fr}.gps-search .action{width:100%}#driveMap{height:54vh;min-height:300px}}
 </style>
 </head>
 <body>
@@ -590,14 +604,23 @@ input,select{
 
 <section class="screen" id="navigation">
  <div class="screen-head">
-  <h2>📍 Navegação</h2>
-  <button class="back" onclick="closeScreens()">✕ Voltar</button>
+  <h2>📍 GPS Morais Drive</h2>
+  <button class="back" onclick="stopGps();closeScreens()">✕ Voltar</button>
  </div>
- <div class="panel">
-  <h3>Escolha seu aplicativo de mapas</h3>
-  <button class="action" onclick="go('https://www.google.com/maps')">ABRIR GOOGLE MAPS</button>
-  <button class="action alt" onclick="go('https://www.waze.com/live-map')">ABRIR WAZE</button>
-  <p class="note">A navegação será aberta no aplicativo ou navegador compatível instalado no aparelho.</p>
+ <div class="panel gps-panel">
+  <h3>Destino e rota</h3>
+  <div class="gps-search">
+   <input id="gpsDestination" type="search" placeholder="Digite endereço ou local de destino" autocomplete="street-address">
+   <button class="action" onclick="searchGpsDestination()">BUSCAR DESTINO</button>
+  </div>
+  <div class="gps-actions">
+   <button class="action alt" onclick="startGps()">📍 MINHA LOCALIZAÇÃO</button>
+   <button class="action alt" onclick="clearGpsRoute()">LIMPAR ROTA</button>
+  </div>
+  <div class="gps-status"><span id="gpsStatus">GPS aguardando autorização.</span><strong id="gpsAccuracy"></strong></div>
+  <div id="driveMap" role="application" aria-label="Mapa e navegação Morais Drive"></div>
+  <div class="gps-info" id="gpsRouteInfo">Digite um destino e permita o acesso à localização para calcular sua rota.</div>
+  <p class="note">Mapa OpenStreetMap. Busca de endereços e cálculo de rotas dependem de internet e de serviços públicos. Mantenha o aplicativo aberto durante o uso. Navegação auxiliar: respeite sempre a sinalização de trânsito.</p>
  </div>
 </section>
 
@@ -767,6 +790,88 @@ input,select{
 </body>
 </html>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+let gpsMap=null,gpsMarker=null,gpsDestinationMarker=null,gpsRouteLayer=null,gpsWatchId=null,gpsCurrentPosition=null,gpsDestination=null,gpsLastRouteAt=0;
+function gpsSetStatus(message,accuracy=''){if($('gpsStatus'))$('gpsStatus').textContent=message;if($('gpsAccuracy'))$('gpsAccuracy').textContent=accuracy;}
+function initGpsMap(){
+ if(gpsMap){setTimeout(()=>gpsMap.invalidateSize(),100);return;}
+ if(!window.L){gpsSetStatus('Mapa não carregado. Verifique a internet.');return;}
+ gpsMap=L.map('driveMap').setView([-23.55,-46.63],5);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(gpsMap);
+ setTimeout(()=>gpsMap.invalidateSize(),150);
+}
+function startGps(){
+ if(!navigator.geolocation){gpsSetStatus('Este navegador não oferece localização.');return;}
+ initGpsMap();if(!gpsMap)return;
+ gpsSetStatus('Solicitando permissão de localização...');
+ navigator.geolocation.getCurrentPosition(pos=>{
+  gpsUpdatePosition(pos);
+  if(gpsWatchId===null)gpsWatchId=navigator.geolocation.watchPosition(gpsUpdatePosition,gpsHandleError,{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
+ },gpsHandleError,{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+}
+function gpsUpdatePosition(pos){
+ gpsCurrentPosition=[pos.coords.longitude,pos.coords.latitude];
+ const point=[pos.coords.latitude,pos.coords.longitude],accuracy=Math.round(pos.coords.accuracy||0);
+ gpsSetStatus('Localização atualizada',accuracy?'Precisão aproximada: '+accuracy+' m':'');
+ if(!gpsMarker)gpsMarker=L.circleMarker(point,{radius:9,color:'#fff',weight:3,fillColor:'#ff303b',fillOpacity:1}).addTo(gpsMap).bindPopup('Sua localização');
+ else gpsMarker.setLatLng(point);
+ if(!gpsDestination)gpsMap.setView(point,16);
+ if(gpsDestination&&Date.now()-gpsLastRouteAt>15000)calculateGpsRoute(false);
+}
+function gpsHandleError(err){
+ const messages={1:'Permissão negada. Autorize a localização nas configurações do navegador.',2:'Localização indisponível. Verifique o GPS do aparelho.',3:'Tempo esgotado. Tente novamente.'};
+ gpsSetStatus(messages[err.code]||'Não foi possível obter sua localização.');
+}
+async function searchGpsDestination(){
+ const q=$('gpsDestination').value.trim();
+ if(!q){alert('Digite um endereço ou local de destino.');return;}
+ initGpsMap();if(!gpsMap)return;gpsSetStatus('Buscando destino...');
+ try{
+  const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q),{headers:{'Accept-Language':'pt-BR'}});
+  if(!response.ok)throw new Error('Busca indisponível');
+  const results=await response.json();
+  if(!results.length){gpsSetStatus('Destino não encontrado. Informe endereço e cidade.');return;}
+  const p=results[0];gpsDestination=[Number(p.lon),Number(p.lat)];
+  if(gpsDestinationMarker)gpsMap.removeLayer(gpsDestinationMarker);
+  gpsDestinationMarker=L.marker([gpsDestination[1],gpsDestination[0]]).addTo(gpsMap).bindPopup('Destino: '+gpsEscape(p.display_name)).openPopup();
+  gpsMap.setView([gpsDestination[1],gpsDestination[0]],14);gpsSetStatus('Destino encontrado');
+  if(gpsCurrentPosition)await calculateGpsRoute(true);
+  else $('gpsRouteInfo').textContent='Destino marcado. Toque em MINHA LOCALIZAÇÃO para calcular a rota.';
+ }catch(e){gpsSetStatus('Falha ao buscar destino. Confira a conexão e tente novamente.');}
+}
+async function calculateGpsRoute(showStatus=true){
+ if(!gpsCurrentPosition||!gpsDestination)return;
+ gpsLastRouteAt=Date.now();if(showStatus)gpsSetStatus('Calculando rota...');
+ try{
+  const url='https://router.project-osrm.org/route/v1/driving/'+gpsCurrentPosition.join(',')+';'+gpsDestination.join(',')+'?overview=full&geometries=geojson&steps=true';
+  const response=await fetch(url);if(!response.ok)throw new Error('Rota indisponível');
+  const data=await response.json();if(data.code!=='Ok'||!data.routes?.length)throw new Error('Rota não encontrada');
+  const route=data.routes[0],coords=route.geometry.coordinates.map(c=>[c[1],c[0]]);
+  if(gpsRouteLayer)gpsMap.removeLayer(gpsRouteLayer);
+  gpsRouteLayer=L.polyline(coords,{color:'#ff303b',weight:6,opacity:.9}).addTo(gpsMap);
+  gpsMap.fitBounds(gpsRouteLayer.getBounds(),{padding:[28,28]});
+  const km=(route.distance/1000).toFixed(1).replace('.',','),mins=Math.max(1,Math.round(route.duration/60));
+  const step=route.legs?.[0]?.steps?.find(s=>s.name||s.maneuver?.type);
+  $('gpsRouteInfo').innerHTML='<strong>'+km+' km</strong> • cerca de <strong>'+mins+' min</strong><br>'+gpsEscape(step?gpsManeuver(step):'Siga o trajeto indicado no mapa.');
+  gpsSetStatus('Rota calculada');
+ }catch(e){$('gpsRouteInfo').textContent='Não foi possível calcular a rota. Tente novamente em instantes.';gpsSetStatus('Falha ao calcular rota.');}
+}
+function gpsManeuver(step){
+ const m=step.maneuver||{},type=m.type||'continue',mods=m.modifier||'';
+ const names={depart:'Inicie o trajeto',turn:'Vire','new name':'Siga para',continue:'Continue',merge:'Entre',on_ramp:'Acesse a alça',off_ramp:'Saia pela alça',roundabout:'Entre na rotatória',arrive:'Você chegou ao destino'};
+ return (names[type]||'Continue')+(mods?' '+mods:'')+(step.name?' em '+step.name:'');
+}
+function gpsEscape(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function clearGpsRoute(){
+ gpsDestination=null;
+ if(gpsDestinationMarker&&gpsMap){gpsMap.removeLayer(gpsDestinationMarker);gpsDestinationMarker=null;}
+ if(gpsRouteLayer&&gpsMap){gpsMap.removeLayer(gpsRouteLayer);gpsRouteLayer=null;}
+ $('gpsDestination').value='';$('gpsRouteInfo').textContent='Rota limpa. Digite um novo destino.';
+ gpsSetStatus(gpsCurrentPosition?'GPS ativo':'GPS aguardando autorização.');
+}
+function stopGps(){if(gpsWatchId!==null&&navigator.geolocation){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}}
+</script>
 <script>
 const $ = id => document.getElementById(id);
 const read = (key, fallback) => {
