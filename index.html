@@ -873,13 +873,24 @@ input,select{
 <script>
 let gpsMap=null,gpsMarker=null,gpsDestinationMarker=null,gpsRouteLayer=null,gpsWatchId=null,gpsCurrentPosition=null,gpsDestination=null,gpsLastRouteAt=0,gpsFollow=false,gpsLastHeading=0,gpsRouteData=null,gpsNavigationStarted=false;
 let gpsVoiceEnabled=false,gpsVoiceSteps=[],gpsAnnouncedManeuvers=new Set(),gpsLastVoiceText="";
+let gpsTileErrors=0,gpsUsingFallback=false;
 function gpsSetStatus(message,accuracy=''){if($('gpsStatus'))$('gpsStatus').textContent=message;if($('gpsAccuracy'))$('gpsAccuracy').textContent=accuracy;}
 function initGpsMap(){
  if(gpsMap){setTimeout(()=>gpsMap.invalidateSize(),100);return;}
  if(!window.L){gpsSetStatus('Mapa não carregado. Verifique a internet.');return;}
  gpsMap=L.map('driveMap',{zoomControl:false,preferCanvas:true}).setView([-23.55,-51.46],5);
  L.control.zoom({position:'bottomright'}).addTo(gpsMap);
- L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(gpsMap);
+ const darkTiles=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'});
+ darkTiles.on('tileerror',()=>{
+  gpsTileErrors++;
+  if(gpsTileErrors>=3&&!gpsUsingFallback){
+   gpsUsingFallback=true;
+   gpsMap.removeLayer(darkTiles);
+   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(gpsMap);
+   gpsSetStatus('Mapa alternativo carregado • sem necessidade de chave de API');
+  }
+ });
+ darkTiles.addTo(gpsMap);
  setTimeout(()=>gpsMap.invalidateSize(),150);
 }
 function gpsGetSelectedVehicleImage(){
