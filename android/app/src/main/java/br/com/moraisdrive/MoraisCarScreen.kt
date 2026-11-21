@@ -2,15 +2,15 @@ package br.com.moraisdrive
 
 import android.content.Intent
 import android.net.Uri
+import androidx.car.app.CarContext
 import androidx.car.app.Screen
 import androidx.car.app.model.Action
-import androidx.car.app.model.CarColor
 import androidx.car.app.model.CarText
 import androidx.car.app.model.MessageTemplate
 import androidx.car.app.model.Template
 
 class MoraisCarScreen(
-    carContext: androidx.car.app.CarContext,
+    carContext: CarContext,
     private val launchIntent: Intent
 ) : Screen(carContext) {
 
@@ -24,9 +24,9 @@ class MoraisCarScreen(
     override fun onGetTemplate(): Template {
         val place = destination
         val message = if (place.isNullOrBlank()) {
-            "GPS do Morais Drive. Prepare seu destino no celular antes de iniciar a viagem."
+            "GPS do Morais Drive. Configure o destino no celular antes de iniciar a viagem."
         } else {
-            "Destino recebido: $place. Confirme o trajeto no aplicativo de mapas antes de sair."
+            "Destino recebido: $place. Confira o trajeto e inicie a navegação com o veículo parado."
         }
 
         val openMap = Action.Builder()
@@ -42,7 +42,7 @@ class MoraisCarScreen(
             .build()
 
         return MessageTemplate.Builder(CarText.create(message))
-            .setTitle(CarText.create("MORAIS DRIVE"))
+            .setTitle("MORAIS DRIVE")
             .addAction(openMap)
             .setHeaderAction(Action.APP_ICON)
             .build()
