@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "morais-drive-v23";
+const CACHE_NAME = "morais-drive-v24";
 
 const FILES = [
   "./onix_preto.jpg",
