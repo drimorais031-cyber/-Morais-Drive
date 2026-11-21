@@ -6,7 +6,7 @@ Projeto Android nativo separado da PWA publicada na raiz do repositório. A vers
 - Android 6.0 (API 23) ou superior.
 - Aparelhos sem telefonia/SIM ainda podem abrir o app e usar recursos compatíveis, mas não realizam chamadas celulares.
 - A seleção como telefone padrão usa RoleManager no Android 10+ e o fluxo legado de TelecomManager no Android 6 a 9.
-- Android Auto requer implementação própria com Android for Cars App Library, categoria aprovada e validação específica. Não é espelhamento irrestrito da tela.
+- Integração inicial Android Auto com Android for Cars App Library 1.7.0, serviço de navegação, tela compatível com templates e encaminhamento de destino para o app de mapas do veículo.\n- A integração ainda não renderiza o mapa/rota do Morais Drive na tela do carro e precisa de implementação do motor de mapas em Surface, testes com Desktop Head Unit e revisão/aprovação do Google. Android Auto não é espelhamento irrestrito da tela.
 
 ## Compilar
 1. Abra a pasta `android/` no Android Studio.
@@ -26,7 +26,7 @@ Projeto Android nativo separado da PWA publicada na raiz do repositório. A vers
 - Tratamento completo de chamadas múltiplas, espera, conferência, Bluetooth e áudio.
 - Permissões e experiência de contatos/histórico.
 - UI completa para chamada em segundo plano e tela bloqueada em todos os fabricantes.
-- Android Auto com biblioteca oficial e testes em carro.
+- Renderização do mapa próprio e rota em Surface do Android Auto, instruções curva a curva, metadados de viagem e testes com Desktop Head Unit/carro.\n- Revisão de qualidade e aprovação do Google Play para distribuição como app de navegação.
 - Integração da navegação GPS dentro do app nativo.
 
 Esta é uma base de desenvolvimento, não um discador final aprovado para distribuição. Recursos e disponibilidade dependem do aparelho, versão Android, operadora e permissões concedidas.
