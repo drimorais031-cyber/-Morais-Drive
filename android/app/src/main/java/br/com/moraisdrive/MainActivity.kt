@@ -2,12 +2,14 @@ package br.com.moraisdrive
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.telecom.TelecomManager
 import android.view.Gravity
 import android.view.ViewGroup
@@ -19,6 +21,8 @@ import android.widget.Toast
 
 class MainActivity : Activity() {
     private lateinit var number: EditText
+    private val contactNames = ArrayList<String>()
+    private val contactNumbers = ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +59,10 @@ class MainActivity : Activity() {
         root.addView(number, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 64).apply { topMargin = 28 })
 
         root.addView(Button(this).apply {
+            text = "CONTATOS DO CELULAR"
+            setOnClickListener { openContacts() }
+        }, match())
+        root.addView(Button(this).apply {
             text = "LIGAR"
             setOnClickListener { makeCall() }
         }, match())
@@ -63,7 +71,7 @@ class MainActivity : Activity() {
             setOnClickListener { requestDialerRole() }
         }, match())
         root.addView(TextView(this).apply {
-            text = "Chamadas dependem de aparelho com telefonia, SIM ativo e permissões concedidas."
+            text = "Os contatos só serão acessados após sua autorização. Chamadas dependem de chip ativo e permissões."
             textSize = 13f
             setTextColor(android.graphics.Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -74,6 +82,63 @@ class MainActivity : Activity() {
         if (intent?.action == Intent.ACTION_DIAL) {
             intent.data?.schemeSpecificPart?.let { number.setText(it) }
         }
+    }
+
+    private fun openContacts() {
+        if (checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), 102)
+            return
+        }
+        showContacts()
+    }
+
+    private fun showContacts() {
+        contactNames.clear()
+        contactNumbers.clear()
+        try {
+            val projection = arrayOf(
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.NUMBER
+            )
+            contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                projection,
+                null,
+                null,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC"
+            )?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                val numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                while (cursor.moveToNext()) {
+                    val name = cursor.getString(nameIndex).orEmpty()
+                    val phone = cursor.getString(numberIndex).orEmpty()
+                    if (phone.isNotBlank()) {
+                        contactNames.add("$name\n$phone")
+                        contactNumbers.add(phone)
+                    }
+                }
+            }
+        } catch (e: SecurityException) {
+            toast("O acesso aos contatos não foi autorizado.")
+            return
+        } catch (e: Exception) {
+            toast("Não foi possível carregar os contatos deste aparelho.")
+            return
+        }
+
+        if (contactNames.isEmpty()) {
+            toast("Nenhum contato com número de telefone foi encontrado.")
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("CONTATOS DO CELULAR")
+            .setItems(contactNames.toTypedArray()) { _, which ->
+                number.setText(contactNumbers[which])
+                number.setSelection(number.text.length)
+            }
+            .setNegativeButton("FECHAR", null)
+            .show()
     }
 
     @Suppress("DEPRECATION")
@@ -104,11 +169,10 @@ class MainActivity : Activity() {
     private fun makeCall() {
         val value = number.text.toString().trim()
         if (value.isBlank()) {
-            toast("Digite um número.")
+            toast("Digite um número ou escolha um contato.")
             return
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), 101)
             return
         }
@@ -132,12 +196,12 @@ class MainActivity : Activity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 101) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                placeCall(number.text.toString().trim())
-            } else {
-                toast("A permissão de telefone é necessária para realizar chamadas.")
-            }
+        val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        when (requestCode) {
+            101 -> if (granted) placeCall(number.text.toString().trim())
+                else toast("A permissão de telefone é necessária para realizar chamadas.")
+            102 -> if (granted) showContacts()
+                else toast("O acesso aos contatos é necessário para exibir sua lista.")
         }
     }
 
