@@ -11,8 +11,8 @@ android {
         applicationId = "br.com.moraisdrive"
         minSdk = 23
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.3.1"
+        versionCode = 7
+        versionName = "1.3.2"
     }
 
     compileOptions {
