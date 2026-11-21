@@ -1,5 +1,6 @@
 package br.com.moraisdrive
 
+import android.Manifest
 import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
@@ -116,7 +117,7 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {\n        super.onRequestPermissionsResult(requestCode, permissions, grantResults)\n        if (requestCode == 101) {\n            if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) makeCall()\n            else toast("A permissão de telefone é necessária para realizar chamadas.")\n        }\n    }\n\n    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
     private fun match() = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = 12 }
 }
