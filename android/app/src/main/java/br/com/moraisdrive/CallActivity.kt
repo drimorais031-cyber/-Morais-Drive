@@ -10,6 +10,7 @@ import android.widget.Toast
 import android.telecom.Call
 
 class CallActivity : Activity() {
+    private lateinit var callTitle: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = android.graphics.Color.BLACK
@@ -20,13 +21,13 @@ class CallActivity : Activity() {
             setPadding(24, 24, 24, 24)
             setBackgroundColor(android.graphics.Color.rgb(15, 15, 15))
         }
-        val title = TextView(this).apply {
+        callTitle = TextView(this).apply {
             text = "CHAMADA"
             textSize = 26f
             gravity = Gravity.CENTER
             setTextColor(android.graphics.Color.WHITE)
         }
-        root.addView(title)
+        root.addView(callTitle)
         val answer = Button(this).apply {
             text = "ATENDER"
             setOnClickListener {
@@ -48,7 +49,6 @@ class CallActivity : Activity() {
             setOnClickListener {
                 val call = CurrentCall.call
                 if (call != null) {
-                    val audio = call.details
                     Toast.makeText(this@CallActivity, "Controle de áudio será conectado na próxima etapa.", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -59,7 +59,7 @@ class CallActivity : Activity() {
 
     private fun refresh() {
         val call = CurrentCall.call ?: return
-        title = when (call.state) {
+        callTitle.text = when (call.state) {
             Call.STATE_RINGING -> "CHAMADA RECEBIDA"
             Call.STATE_ACTIVE -> "EM LIGAÇÃO"
             Call.STATE_DIALING -> "CHAMANDO"
