@@ -1,26 +1,32 @@
-# Morais Drive para Android (nativo)
+# Morais Drive para Android
 
-Este projeto é separado da PWA publicada na raiz do repositório. Não altera a versão web/GPS existente.
+Projeto Android nativo separado da PWA publicada na raiz do repositório. A versão web/GPS existente permanece preservada.
 
-## Abrir e compilar
-1. Instale o Android Studio.
-2. Abra a pasta `android/` como projeto.
+## Compatibilidade planejada
+- Android 6.0 (API 23) ou superior.
+- Aparelhos sem telefonia/SIM ainda podem abrir o app e usar recursos compatíveis, mas não realizam chamadas celulares.
+- A seleção como telefone padrão usa RoleManager no Android 10+ e o fluxo legado de TelecomManager no Android 6 a 9.
+- Android Auto requer implementação própria com Android for Cars App Library, categoria aprovada e validação específica. Não é espelhamento irrestrito da tela.
+
+## Compilar
+1. Abra a pasta `android/` no Android Studio.
+2. Use JDK 17 e Android SDK 35.
 3. Aguarde a sincronização do Gradle.
-4. Use JDK 17 e Android SDK 35.
-5. Execute em um aparelho Android com chip/SIM para testar telefonia.
+4. Execute a configuração `app` em um aparelho ou emulador.
 
-## Estado desta primeira base
-- Projeto Android Kotlin criado.
-- Tela inicial com discador básico.
-- Solicitação da função de aplicativo de telefone padrão via RoleManager.
-- Declaração do InCallService e tela inicial de chamada.
-- Chamadas reais dependem de aparelho compatível, SIM, permissões e de o usuário escolher o app como telefone padrão.
+## Implementado nesta base
+- Projeto Android Kotlin.
+- Discador básico.
+- Pedido para tornar o app telefone padrão, com fluxo para Android antigo e novo.
+- Serviço InCallService.
+- Tela de chamada com atender, recusar/encerrar e alternância de alto-falante.
 
-## Ainda não concluído
-- Teste de build em Android Studio/CI.
-- UI completa e robusta para chamadas recebidas/em andamento, áudio, espera, múltiplas chamadas e histórico.
-- Leitura e busca de contatos com fluxo de permissões.
-- Integração Android Auto com Android for Cars App Library e revisão de elegibilidade.
-- Integração do GPS/web dentro do aplicativo nativo.
+## Ainda precisa de validação e desenvolvimento
+- Build automatizado e teste em aparelhos reais de diferentes fabricantes/versões.
+- Tratamento completo de chamadas múltiplas, espera, conferência, Bluetooth e áudio.
+- Permissões e experiência de contatos/histórico.
+- UI completa para chamada em segundo plano e tela bloqueada em todos os fabricantes.
+- Android Auto com biblioteca oficial e testes em carro.
+- Integração da navegação GPS dentro do app nativo.
 
-**Não distribuir esta versão como discador final ainda.** Esta é a estrutura inicial de desenvolvimento, não uma versão pronta para uso diário nem um APK assinado.
+Esta é uma base de desenvolvimento, não um discador final aprovado para distribuição. Recursos e disponibilidade dependem do aparelho, versão Android, operadora e permissões concedidas.
