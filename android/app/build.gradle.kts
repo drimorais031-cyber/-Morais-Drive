@@ -11,11 +11,11 @@ android {
         applicationId = "br.com.moraisdrive"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
-    compileOptions {
+    dependencies {\n        implementation("androidx.car.app:app:1.7.0")\n    }\n\n    compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
