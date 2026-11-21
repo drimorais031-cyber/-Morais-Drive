@@ -1,7 +1,17 @@
 
-const CACHE_NAME = "morais-drive-v21";
+const CACHE_NAME = "morais-drive-v22";
 
 const FILES = [
+  "./onix_preto.jpg",
+  "./onix_prata.jpg",
+  "./onix_vermelho.jpg",
+  "./gol_branco.jpg",
+  "./gol_vermelho.jpg",
+  "./gol_preto.jpg",
+  "./gol_cinza.jpg",
+  "./hb20_branco.jpg",
+  "./hb20_preto.jpg",
+  "./hb20_vermelho.jpg",
   "./argo_branco.png",
   "./argo_cinza.png",
   "./argo_preto.png",

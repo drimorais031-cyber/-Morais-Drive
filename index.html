@@ -534,10 +534,8 @@ input,select{
   <label>Modelo</label>
   <select id="modelo" onchange="updateCarImage()">
    <option>Chevrolet Onix</option>
-   <option>Chevrolet Prisma</option>
    <option>Hyundai HB20</option>
    <option>Volkswagen Gol</option>
-   <option>Volkswagen Polo</option>
    <option>Fiat Argo</option>
    <option>Fiat Mobi</option>
    <option>Renault Kwid</option>
@@ -893,12 +891,16 @@ function selectGarageModel(model){
  updateCarImage();
 }
 const garageAssets={
- 'Chevrolet Onix':{'Branco':'./file_000000007074820e94f75f049f6ee1fe.png','Vermelho':'./onix-garage.webp'},
- 'Hyundai HB20':{'Cinza':'./hb20_cinza.png'},
+ 'Chevrolet Onix':{'Branco':'./file_000000007074820e94f75f049f6ee1fe.png','Preto':'./onix_preto.jpg','Prata':'./onix_prata.jpg','Vermelho':'./onix_vermelho.jpg'},
+ 'Hyundai HB20':{'Branco':'./hb20_branco.jpg','Preto':'./hb20_preto.jpg','Cinza':'./hb20_cinza.png','Vermelho':'./hb20_vermelho.jpg'},
+ 'Volkswagen Gol':{'Branco':'./gol_branco.jpg','Preto':'./gol_preto.jpg','Cinza':'./gol_cinza.jpg','Vermelho':'./gol_vermelho.jpg'},
  'Fiat Argo':{'Branco':'./argo_branco.png','Cinza':'./argo_cinza.png','Preto':'./argo_preto.png','Vermelho':'./argo_vermelho.png'},
  'Renault Kwid':{'Branco':'./kwid_branco.png','Cinza':'./kwid_cinza.png','Preto':'./kwid_preto.png','Vermelho':'./kwid_vermelho.png'},
  'Fiat Mobi':{'Branco':'./mobi_branco.png','Cinza':'./mobi_cinza.png','Preto':'./mobi_preto.png','Vermelho':'./mobi_vermelho.png'}
 };
+function availableCarColors(model){
+ return Object.keys(garageAssets[model]||{});
+}
 function carImageFor(model,color){
  const variants=garageAssets[model]||{};
  return variants[color]||null;
@@ -906,23 +908,30 @@ function carImageFor(model,color){
 function renderModelGallery(selectedModel,color){
  const gallery=$('modelGallery');
  if(!gallery)return;
- const models=['Chevrolet Onix','Hyundai HB20','Fiat Argo','Fiat Mobi','Renault Kwid'];
+ const models=['Chevrolet Onix','Hyundai HB20','Volkswagen Gol','Fiat Argo','Fiat Mobi','Renault Kwid'];
  gallery.innerHTML=models.map(model=>{
-  const image=carImageFor(model,color)||carImageFor(model,'Cinza')||carImageFor(model,'Branco')||'';
+  const image=carImageFor(model,color)||carImageFor(model,availableCarColors(model)[0])||'';
   const active=model===selectedModel?' active':'';
   const fallback=image||makeCarArt(model,color);
   return '<button type="button" class="model-option'+active+'" onclick="selectGarageModel(\''+model+'\')"><img alt="'+model+' frontal" src="'+fallback+'"><span>'+model.replace('Chevrolet ','').replace('Hyundai ','').replace('Fiat ','').replace('Renault ','').toUpperCase()+'</span></button>';
  }).join('');
 }
 function updateColorPicker(color){
+ const model=$('modelo')?.value||'Chevrolet Onix';
+ const available=availableCarColors(model);
  document.querySelectorAll('.color-swatch').forEach(button=>{
+  const enabled=available.includes(button.dataset.color);
+  button.hidden=!enabled;
   button.classList.toggle('active',button.dataset.color===color);
  });
 }
 function updateCarImage(){
  const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
- const color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
- const art=carImageFor(model,color)|| (model==='Hyundai HB20'?'./hb20_cinza.png':(model==='Chevrolet Onix'?'./onix-garage.webp':makeCarArt(model,color)));
+ let color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
+ const colors=availableCarColors(model);
+ if(!colors.includes(color))color=colors[0]||'Branco';
+ $('cor').value=color;
+ const art=carImageFor(model,color)||makeCarArt(model,color);
  $('heroCar').src=art;
  $('settingsCar').src=art;
  $('heroCar').style.objectFit='contain';
