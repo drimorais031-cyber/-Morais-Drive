@@ -3,212 +3,192 @@ package br.com.moraisdrive
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.telecom.TelecomManager
-import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.webkit.GeolocationPermissions
+import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
+import android.graphics.Color
+import android.view.WindowManager
 
 class MainActivity : Activity() {
-    private lateinit var number: EditText
-    private val contactNames = ArrayList<String>()
-    private val contactNumbers = ArrayList<String>()
+    private lateinit var webView: WebView
+    private var geoCallback: GeolocationPermissions.Callback? = null
+    private var geoOrigin: String? = null
+    private var pendingCallNumber: String? = null
+    private val appUrl = "https://drimorais031-cyber.github.io/-Morais-Drive/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = android.graphics.Color.rgb(15, 15, 15)
-        window.navigationBarColor = android.graphics.Color.BLACK
-
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(28, 32, 28, 32)
-            setBackgroundColor(android.graphics.Color.rgb(15, 15, 15))
+        window.statusBarColor = Color.rgb(8, 12, 18)
+        window.navigationBarColor = Color.BLACK
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        webView = WebView(this).apply {
+            setBackgroundColor(Color.rgb(8, 12, 18))
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.databaseEnabled = true
+            settings.geolocationEnabled = true
+            settings.loadsImagesAutomatically = true
+            settings.javaScriptCanOpenWindowsAutomatically = false
+            settings.allowFileAccess = false
+            settings.allowContentAccess = false
+            settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            addJavascriptInterface(NativeBridge(), "MoraisNative")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView, url: String) {
+                    super.onPageFinished(view, url)
+                    injectContactsButton()
+                }
+                override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+                    val uri = Uri.parse(url)
+                    return when {
+                        uri.scheme == "tel" -> {
+                            try { startActivity(Intent(Intent.ACTION_DIAL, uri)) } catch (_: Exception) { toast("Não foi possível abrir o telefone.") }
+                            true
+                        }
+                        uri.host == "drimorais031-cyber.github.io" -> false
+                        uri.scheme == "https" || uri.scheme == "http" -> {
+                            try { startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (_: Exception) {}
+                            true
+                        }
+                        else -> true
+                    }
+                }
+            }
+            webChromeClient = object : WebChromeClient() {
+                override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
+                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        callback.invoke(origin, true, false)
+                    } else {
+                        geoOrigin = origin
+                        geoCallback = callback
+                        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), REQUEST_LOCATION)
+                    }
+                }
+            }
         }
-        root.addView(TextView(this).apply {
-            text = "MORAIS DRIVE"
-            textSize = 28f
-            setTextColor(android.graphics.Color.WHITE)
-            gravity = Gravity.CENTER
-        }, match())
-        root.addView(TextView(this).apply {
-            text = "TELEFONE"
-            textSize = 14f
-            setTextColor(android.graphics.Color.rgb(230, 45, 55))
-            gravity = Gravity.CENTER
-        }, match())
-
-        number = EditText(this).apply {
-            hint = "Digite o número"
-            textSize = 22f
-            setSingleLine(true)
-            inputType = android.text.InputType.TYPE_CLASS_PHONE
-            setTextColor(android.graphics.Color.WHITE)
-            setHintTextColor(android.graphics.Color.GRAY)
-        }
-        root.addView(number, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 64).apply { topMargin = 28 })
-
-        root.addView(Button(this).apply {
-            text = "CONTATOS DO CELULAR"
-            setOnClickListener { openContacts() }
-        }, match())
-        root.addView(Button(this).apply {
-            text = "LIGAR"
-            setOnClickListener { makeCall() }
-        }, match())
-        root.addView(Button(this).apply {
-            text = "DEFINIR COMO TELEFONE PADRÃO"
-            setOnClickListener { requestDialerRole() }
-        }, match())
-        root.addView(TextView(this).apply {
-            text = "Os contatos só serão acessados após sua autorização. Chamadas dependem de chip ativo e permissões."
-            textSize = 13f
-            setTextColor(android.graphics.Color.LTGRAY)
-            gravity = Gravity.CENTER
-            setPadding(0, 24, 0, 0)
-        }, match())
-        setContentView(root)
-
-        if (intent?.action == Intent.ACTION_DIAL) {
-            intent.data?.schemeSpecificPart?.let { number.setText(it) }
-        }
+        setContentView(webView)
+        webView.loadUrl(appUrl)
     }
 
-    private fun openContacts() {
+    private fun injectContactsButton() {
+        val script = """
+            (function() {
+              if (document.getElementById('moraisNativeContactsBtn')) return;
+              var host = document.querySelector('.top-right') || document.querySelector('.topbar');
+              if (!host) return;
+              var b = document.createElement('button');
+              b.id = 'moraisNativeContactsBtn';
+              b.type = 'button';
+              b.textContent = '👥';
+              b.title = 'Contatos do celular';
+              b.setAttribute('aria-label','Contatos do celular');
+              b.style.cssText = 'width:44px;height:44px;margin-left:8px;border:1px solid rgba(255,255,255,.22);border-radius:13px;background:#ff303b;color:white;font-size:21px;font-weight:800;cursor:pointer;flex:0 0 auto;';
+              b.onclick = function(){ if(window.MoraisNative) window.MoraisNative.openContacts(); };
+              host.appendChild(b);
+              window.addEventListener('morais-contact-selected', function(e) {
+                var d=e.detail||{};
+                var field=document.querySelector('input[type=tel],input[autocomplete=tel],input[name*=phone i],input[id*=phone i]');
+                if(field){ field.value=d.phone||''; field.dispatchEvent(new Event('input',{bubbles:true})); field.dispatchEvent(new Event('change',{bubbles:true})); }
+              });
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(script, null)
+    }
+
+    private inner class NativeBridge {
+        @JavascriptInterface fun openContacts() { runOnUiThread { requestContacts() } }
+    }
+
+    private fun requestContacts() {
         if (checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), 102)
-            return
-        }
-        showContacts()
+            requestPermissions(arrayOf(Manifest.permission.READ_CONTACTS), REQUEST_CONTACTS)
+        } else showContacts()
     }
 
     private fun showContacts() {
-        contactNames.clear()
-        contactNumbers.clear()
+        val labels = ArrayList<String>()
+        val names = ArrayList<String>()
+        val numbers = ArrayList<String>()
         try {
-            val projection = arrayOf(
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.NUMBER
-            )
-            contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                projection,
-                null,
-                null,
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC"
-            )?.use { cursor ->
-                val nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-                val numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER)
+            contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, null, null,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC")?.use { cursor ->
+                val ni = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                val pi = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                 while (cursor.moveToNext()) {
-                    val name = cursor.getString(nameIndex).orEmpty()
-                    val phone = cursor.getString(numberIndex).orEmpty()
-                    if (phone.isNotBlank()) {
-                        contactNames.add("$name\n$phone")
-                        contactNumbers.add(phone)
-                    }
+                    val name = cursor.getString(ni).orEmpty()
+                    val phone = cursor.getString(pi).orEmpty()
+                    if (phone.isNotBlank()) { labels.add("$name\n$phone"); names.add(name); numbers.add(phone) }
                 }
             }
-        } catch (e: SecurityException) {
-            toast("O acesso aos contatos não foi autorizado.")
-            return
-        } catch (e: Exception) {
-            toast("Não foi possível carregar os contatos deste aparelho.")
-            return
-        }
-
-        if (contactNames.isEmpty()) {
-            toast("Nenhum contato com número de telefone foi encontrado.")
-            return
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("CONTATOS DO CELULAR")
-            .setItems(contactNames.toTypedArray()) { _, which ->
-                number.setText(contactNumbers[which])
-                number.setSelection(number.text.length)
-            }
-            .setNegativeButton("FECHAR", null)
-            .show()
+        } catch (_: Exception) { toast("Não foi possível acessar os contatos."); return }
+        if (labels.isEmpty()) { toast("Nenhum contato com telefone foi encontrado."); return }
+        AlertDialog.Builder(this).setTitle("CONTATOS DO CELULAR")
+            .setItems(labels.toTypedArray()) { _, index ->
+                val name = names[index]
+                val phone = numbers[index]
+                val payload = org.json.JSONObject().put("name", name).put("phone", phone)
+                webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('morais-contact-selected',{detail:$payload}));", null)
+                AlertDialog.Builder(this).setTitle(name.ifBlank { "Contato selecionado" }).setMessage(phone)
+                    .setNegativeButton("FECHAR", null).setPositiveButton("LIGAR") { _, _ -> callNumber(phone) }.show()
+            }.setNegativeButton("FECHAR", null).show()
     }
 
-    @Suppress("DEPRECATION")
-    private fun requestDialerRole() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val roleManager = getSystemService(RoleManager::class.java)
-                if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_DIALER)) {
-                    if (!roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
-                        startActivityForResult(roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER), 100)
-                    } else {
-                        toast("O Morais Drive já é o telefone padrão.")
-                    }
-                } else {
-                    toast("Este aparelho não disponibilizou a função de telefone padrão.")
-                }
-            } else {
-                val changeDefault = Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
-                    putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, packageName)
-                }
-                startActivity(changeDefault)
-            }
-        } catch (e: Exception) {
-            toast("Não foi possível abrir a configuração de telefone padrão neste aparelho.")
-        }
-    }
-
-    private fun makeCall() {
-        val value = number.text.toString().trim()
-        if (value.isBlank()) {
-            toast("Digite um número ou escolha um contato.")
-            return
-        }
+    private fun callNumber(number: String) {
         if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), 101)
+            pendingCallNumber = number
+            requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), REQUEST_CALL)
             return
         }
-        placeCall(value)
-    }
-
-    private fun placeCall(value: String) {
         try {
             val telecom = getSystemService(TELECOM_SERVICE) as TelecomManager
-            telecom.placeCall(Uri.fromParts("tel", value, null), Bundle())
-        } catch (e: SecurityException) {
-            toast("Defina o Morais Drive como telefone padrão e verifique as permissões.")
-        } catch (e: Exception) {
-            toast("Não foi possível iniciar a chamada. Verifique o chip e a rede.")
+            telecom.placeCall(Uri.fromParts("tel", number, null), Bundle())
+        } catch (_: Exception) {
+            try { startActivity(Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", number, null))) }
+            catch (_: Exception) { toast("Não foi possível iniciar a ligação. Verifique o chip e a rede.") }
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
         when (requestCode) {
-            101 -> if (granted) placeCall(number.text.toString().trim())
-                else toast("A permissão de telefone é necessária para realizar chamadas.")
-            102 -> if (granted) showContacts()
-                else toast("O acesso aos contatos é necessário para exibir sua lista.")
+            REQUEST_CONTACTS -> if (granted) showContacts() else toast("Permita o acesso aos contatos para usar sua agenda.")
+            REQUEST_CALL -> {
+                val number = pendingCallNumber
+                pendingCallNumber = null
+                if (granted && number != null) callNumber(number) else if (!granted) toast("Permissão de telefone não concedida.")
+            }
+            REQUEST_LOCATION -> {
+                val callback = geoCallback
+                val origin = geoOrigin
+                geoCallback = null
+                geoOrigin = null
+                callback?.invoke(origin, granted, false)
+                if (!granted) toast("Permita a localização para usar o GPS do Morais Drive.")
+            }
         }
+    }
+
+    override fun onBackPressed() {
+        if (::webView.isInitialized && webView.canGoBack()) webView.goBack() else super.onBackPressed()
     }
 
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
-    private fun match() = LinearLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.WRAP_CONTENT
-    ).apply { topMargin = 12 }
+    companion object {
+        private const val REQUEST_CONTACTS = 102
+        private const val REQUEST_CALL = 101
+        private const val REQUEST_LOCATION = 103
+    }
 }
