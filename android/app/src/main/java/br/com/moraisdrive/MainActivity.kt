@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.telecom.TelecomManager
 import android.view.Gravity
@@ -60,7 +61,7 @@ class MainActivity : Activity() {
             setOnClickListener { requestDialerRole() }
         }, match())
         root.addView(TextView(this).apply {
-            text = "A versão Android está em preparação. A versão GPS/web continua separada e funcionando."
+            text = "Compatível a partir do Android 6.0. Chamadas dependem de aparelho com telefonia e SIM ativo."
             textSize = 13f
             setTextColor(android.graphics.Color.LTGRAY)
             gravity = Gravity.CENTER
@@ -68,32 +69,54 @@ class MainActivity : Activity() {
         }, match())
         setContentView(root)
 
-        intent?.data?.schemeSpecificPart?.let { number.setText(it) }
+        if (intent?.action == Intent.ACTION_DIAL) {
+            intent.data?.schemeSpecificPart?.let { number.setText(it) }
+        }
     }
 
+    @Suppress("DEPRECATION")
     private fun requestDialerRole() {
-        val roleManager = getSystemService(RoleManager::class.java)
-        if (roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true &&
-            !roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
-            startActivityForResult(roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER), 100)
-        } else {
-            Toast.makeText(this, "O Morais Drive já é o telefone padrão ou esta função não está disponível.", Toast.LENGTH_LONG).show()
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val roleManager = getSystemService(RoleManager::class.java)
+                if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_DIALER)) {
+                    if (!roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
+                        startActivityForResult(roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER), 100)
+                    } else {
+                        toast("O Morais Drive já é o telefone padrão.")
+                    }
+                } else {
+                    toast("Este aparelho não disponibilizou a função de telefone padrão.")
+                }
+            } else {
+                val telecom = getSystemService(TELECOM_SERVICE) as TelecomManager
+                val changeDefault = Intent(TelecomManager.ACTION_CHANGE_DEFAULT).apply {
+                    putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, packageName)
+                }
+                startActivity(changeDefault)
+            }
+        } catch (e: Exception) {
+            toast("Não foi possível abrir a configuração de telefone padrão neste aparelho.")
         }
     }
 
     private fun makeCall() {
         val value = number.text.toString().trim()
         if (value.isBlank()) {
-            Toast.makeText(this, "Digite um número.", Toast.LENGTH_SHORT).show()
+            toast("Digite um número.")
             return
         }
         try {
             val telecom = getSystemService(TELECOM_SERVICE) as TelecomManager
             telecom.placeCall(Uri.fromParts("tel", value, null), Bundle())
         } catch (e: SecurityException) {
-            Toast.makeText(this, "Defina o Morais Drive como telefone padrão e conceda as permissões necessárias.", Toast.LENGTH_LONG).show()
+            toast("Defina o Morais Drive como telefone padrão e verifique as permissões de telefone.")
+        } catch (e: Exception) {
+            toast("Não foi possível iniciar a chamada. Verifique o chip e a rede.")
         }
     }
+
+    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
     private fun match() = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = 12 }
 }
