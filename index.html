@@ -1044,6 +1044,11 @@ function openScreen(id){
 }
 function closeScreens(){
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ const nav=$('navigation');
+ if(nav)nav.classList.remove('gps-fullscreen');
+ if($('gpsFullBtn'))$('gpsFullBtn').textContent='⛶ TELA CHEIA';
+ if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+ setTimeout(()=>{if(gpsMap)gpsMap.invalidateSize();},150);
 }
 function go(url){ window.open(url,'_blank'); }
 function callNumber(){
