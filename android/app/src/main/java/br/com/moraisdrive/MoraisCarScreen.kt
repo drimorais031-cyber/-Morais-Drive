@@ -1,0 +1,50 @@
+package br.com.moraisdrive
+
+import android.content.Intent
+import android.net.Uri
+import androidx.car.app.Screen
+import androidx.car.app.model.Action
+import androidx.car.app.model.CarColor
+import androidx.car.app.model.CarText
+import androidx.car.app.model.MessageTemplate
+import androidx.car.app.model.Template
+
+class MoraisCarScreen(
+    carContext: androidx.car.app.CarContext,
+    private val launchIntent: Intent
+) : Screen(carContext) {
+
+    private val destination: String?
+        get() {
+            val data = launchIntent.data ?: return null
+            return data.getQueryParameter("q")
+                ?: data.schemeSpecificPart?.takeIf { it.isNotBlank() }
+        }
+
+    override fun onGetTemplate(): Template {
+        val place = destination
+        val message = if (place.isNullOrBlank()) {
+            "GPS do Morais Drive. Prepare seu destino no celular antes de iniciar a viagem."
+        } else {
+            "Destino recebido: $place. Confirme o trajeto no aplicativo de mapas antes de sair."
+        }
+
+        val openMap = Action.Builder()
+            .setTitle("ABRIR MAPA")
+            .setOnClickListener {
+                val query = place?.takeIf { it.isNotBlank() } ?: "Apucarana, Paraná"
+                val mapIntent = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("geo:0,0?q=" + Uri.encode(query))
+                )
+                carContext.startCarApp(mapIntent)
+            }
+            .build()
+
+        return MessageTemplate.Builder(CarText.create(message))
+            .setTitle(CarText.create("MORAIS DRIVE"))
+            .addAction(openMap)
+            .setHeaderAction(Action.APP_ICON)
+            .build()
+    }
+}
