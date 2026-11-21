@@ -439,6 +439,31 @@ input,select{
 }
 
 .gps-panel{max-width:1100px!important}
+#navigation.gps-fullscreen{background:#090f18}
+#navigation.gps-fullscreen .screen-head{padding:0 5px}
+#navigation.gps-fullscreen .gps-panel{position:relative}
+#navigation.gps-fullscreen .gps-search{background:#101a27;padding:7px;border:1px solid #2a3b50;border-radius:15px;box-shadow:0 5px 18px #0008}
+#navigation.gps-fullscreen .gps-search input{background:#f6f8fb;color:#17212d;border:0;border-radius:11px;font-weight:600}
+#navigation.gps-fullscreen .gps-search input::placeholder{color:#687789}
+#navigation.gps-fullscreen .gps-search .action{background:#ff303b;border-radius:11px;letter-spacing:.4px}
+#navigation.gps-fullscreen .gps-status{background:#101b29;border:1px solid #27394c;color:#dce8f5}
+#navigation.gps-fullscreen .gps-live-stats{position:relative;z-index:4}
+#navigation.gps-fullscreen .gps-stat{background:#111e2d;border:1px solid #2d435a;box-shadow:0 3px 10px #0006}
+#navigation.gps-fullscreen .gps-stat strong{color:#4fc3ff}
+#navigation.gps-fullscreen .gps-stat span{color:#b8c8d8}
+#navigation.gps-fullscreen .gps-info{background:#101b29;border:1px solid #2c4055;border-radius:12px;color:#e6edf5}
+#navigation.gps-fullscreen .gps-info strong{color:#4fc3ff}
+#navigation.gps-fullscreen .gps-toolbar button{border-radius:12px}
+#navigation.gps-fullscreen #gpsStartBtn{background:#17a86b;box-shadow:0 3px 12px #17a86b55}
+#navigation.gps-fullscreen #gpsVoiceBtn{background:#26394d}
+#navigation.gps-fullscreen #driveMap{border:1px solid #31465d;box-shadow:0 5px 18px #0008}
+.leaflet-container{background:#101923!important}
+.leaflet-control-zoom a{background:#172536!important;color:#fff!important;border-color:#35485d!important}
+.leaflet-control-attribution{background:#101923cc!important;color:#c2cfdb!important}
+.leaflet-control-attribution a{color:#69c9ff!important}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#172536;color:#f4f7fb}
+.gps-car-thumb{border:2px solid #35bdff;box-shadow:0 0 0 4px #35bdff44,0 3px 14px #000b}
+.gps-destination-pin{filter:drop-shadow(0 2px 5px #000);font-size:34px}
 .gps-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin:12px 0}
 .gps-search input{min-width:0}
 .gps-actions{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
@@ -852,8 +877,9 @@ function gpsSetStatus(message,accuracy=''){if($('gpsStatus'))$('gpsStatus').text
 function initGpsMap(){
  if(gpsMap){setTimeout(()=>gpsMap.invalidateSize(),100);return;}
  if(!window.L){gpsSetStatus('Mapa não carregado. Verifique a internet.');return;}
- gpsMap=L.map('driveMap',{zoomControl:true}).setView([-23.55,-51.46],5);
- L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(gpsMap);
+ gpsMap=L.map('driveMap',{zoomControl:false,preferCanvas:true}).setView([-23.55,-51.46],5);
+ L.control.zoom({position:'bottomright'}).addTo(gpsMap);
+ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(gpsMap);
  setTimeout(()=>gpsMap.invalidateSize(),150);
 }
 function gpsGetSelectedVehicleImage(){
@@ -959,7 +985,10 @@ async function calculateGpsRoute(showStatus=true){
   gpsNavigationStarted=false;gpsFollow=false;
   if($('gpsStartBtn'))$('gpsStartBtn').style.display='block';
   if(gpsRouteLayer)gpsMap.removeLayer(gpsRouteLayer);
-  gpsRouteLayer=L.polyline(coords,{color:'#ff303b',weight:7,opacity:.95}).addTo(gpsMap);
+  gpsRouteLayer=L.featureGroup([
+   L.polyline(coords,{color:'#071522',weight:13,opacity:.95,lineCap:'round',lineJoin:'round'}),
+   L.polyline(coords,{color:'#28baff',weight:7,opacity:1,lineCap:'round',lineJoin:'round'})
+  ]).addTo(gpsMap);
   if($('gpsDistance'))$('gpsDistance').textContent=(route.distance/1000).toFixed(1).replace('.',',')+' km';
   if($('gpsEta'))$('gpsEta').textContent=Math.max(1,Math.round(route.duration/60))+' min';
   const km=(route.distance/1000).toFixed(1).replace('.',','),mins=Math.max(1,Math.round(route.duration/60));
@@ -985,13 +1014,13 @@ function startGpsNavigation(){
  gpsNavigationStarted=true;gpsFollow=true;gpsEnsureWatch();
  if($('gpsStartBtn'))$('gpsStartBtn').style.display='none';
  gpsSetStatus('Navegação iniciada • acompanhando seu veículo');
- if(gpsCurrentPosition)gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],17,{animate:true});
+ if(gpsCurrentPosition)gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],18,{animate:true});
  if(gpsVoiceEnabled&&gpsVoiceSteps.length)gpsSpeak('Navegação iniciada. '+gpsManeuver(gpsVoiceSteps[0]));
 }
 function recenterGps(){
  if(!gpsMap||!gpsCurrentPosition){startGps();return;}
  if(!gpsNavigationStarted){const bounds=gpsRouteLayer?.getBounds();if(bounds?.isValid())gpsMap.fitBounds(bounds,{padding:[35,35],maxZoom:16});else gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],16);return;}
- gpsFollow=true;gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],17,{animate:true});
+ gpsFollow=true;gpsMap.setView([gpsCurrentPosition[1],gpsCurrentPosition[0]],18,{animate:true});
  gpsSetStatus('Acompanhando seu veículo');
 }
 function toggleGpsFullscreen(){
