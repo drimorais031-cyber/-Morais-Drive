@@ -919,11 +919,23 @@ function renderModelGallery(selectedModel,color){
 function updateColorPicker(color){
  const model=$('modelo')?.value||'Chevrolet Onix';
  const available=availableCarColors(model);
- document.querySelectorAll('.color-swatch').forEach(button=>{
-  const enabled=available.includes(button.dataset.color);
-  button.hidden=!enabled;
-  button.classList.toggle('active',button.dataset.color===color);
- });
+ const picker=$('colorPicker');
+ if(!picker)return;
+ const paints={
+  'Branco':'#f2f3f4',
+  'Preto':'#15191f',
+  'Prata':'#aeb8c2',
+  'Cinza':'#626d79',
+  'Vermelho':'#e52335',
+  'Azul':'#1767b1',
+  'Outra':'linear-gradient(135deg,#23a7a0,#9a53c7,#e8b13d)'
+ };
+ picker.innerHTML=available.map(name=>
+  '<button type="button" class="color-swatch'+(name===color?' active':'')+
+  '" data-color="'+name+'" onclick="chooseCarColor(\''+name+'\')">'+
+  '<i style="background:'+paints[name]+'"></i>'+name.toUpperCase()+'</button>'
+ ).join('');
+ picker.style.gridTemplateColumns='repeat('+Math.min(available.length,7)+',minmax(0,1fr))';
 }
 function updateCarImage(){
  const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
