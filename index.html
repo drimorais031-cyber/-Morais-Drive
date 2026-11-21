@@ -520,6 +520,16 @@ input,select{
 #navigation.gps-fullscreen .gps-info{margin:0;padding:6px 8px;font-size:11px;line-height:1.3}
 @media(max-width:520px){#navigation.gps-fullscreen{padding:4px}#navigation.gps-fullscreen .gps-panel{height:calc(100dvh - 41px);padding:3px}#navigation.gps-fullscreen #driveMap{min-height:0}}
 @media(max-width:520px){#navigation.gps-fullscreen{padding:5px}#navigation.gps-fullscreen .gps-panel{height:calc(100dvh - 48px);padding:5px}#navigation.gps-fullscreen #driveMap{min-height:0}}
+
+.music-now{display:flex;align-items:center;gap:14px;margin:16px 0;padding:13px;border-radius:14px;background:#0c141d;border:1px solid var(--line)}
+.music-disc{width:58px;height:58px;flex:0 0 58px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#ff5962 0 12%,#171e28 13% 48%,#080c12 50%);border:2px solid #ff303b;font-size:26px}
+.music-track-info{min-width:0;display:flex;flex-direction:column;gap:5px}
+.music-track-info strong{overflow-wrap:anywhere;font-size:14px}
+.music-track-info small{color:var(--muted);font-size:11px}
+.music-playlist{max-height:240px;overflow:auto}
+.music-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:12px}
+.music-row.active{color:#ff5962}
+.music-row button{border:1px solid var(--line);background:#263545;color:white;border-radius:8px;padding:7px 10px}
 </style>
 </head>
 <body>
@@ -708,11 +718,31 @@ input,select{
   <h2>♫ Música</h2>
   <button class="back" onclick="closeScreens()">✕ Voltar</button>
  </div>
+ <div class="panel music-player">
+  <h3>Player Morais Drive</h3>
+  <p class="note">Toque suas músicas salvas no celular diretamente aqui. Selecione arquivos MP3, M4A, WAV ou outros formatos compatíveis.</p>
+  <input id="musicFiles" type="file" accept="audio/*" multiple onchange="loadMusicFiles(this.files)">
+  <div class="music-now">
+   <div class="music-disc">♫</div>
+   <div class="music-track-info">
+    <strong id="musicTrackName">Nenhuma música selecionada</strong>
+    <small id="musicTrackMeta">Adicione músicas para começar</small>
+   </div>
+  </div>
+  <audio id="musicAudio" controls preload="metadata" style="width:100%;margin:12px 0" onended="nextMusicTrack()"></audio>
+  <div class="grid2">
+   <button class="action alt" onclick="previousMusicTrack()">⏮ ANTERIOR</button>
+   <button class="action" onclick="toggleMusicPlayback()">▶ / ❚❚ TOCAR / PAUSAR</button>
+  </div>
+  <button class="action alt" onclick="nextMusicTrack()">PRÓXIMA ⏭</button>
+  <h3 style="margin-top:20px">Fila de reprodução</h3>
+  <div id="musicPlaylist" class="music-playlist"><p class="note">Sua lista aparecerá aqui.</p></div>
+  <p class="note">A reprodução continua enquanto você usa outras telas do Morais Drive. A disponibilidade em segundo plano depende das regras de energia do Android.</p>
+ </div>
  <div class="panel">
-  <h3>Seus aplicativos de música</h3>
-  <button class="action" onclick="go('https://open.spotify.com/')">SPOTIFY</button>
+  <h3>Serviços de música online</h3>
+  <button class="action alt" onclick="go('https://open.spotify.com/')">SPOTIFY</button>
   <button class="action alt" onclick="go('https://music.youtube.com/')">YOUTUBE MUSIC</button>
-  <button class="action alt" onclick="go('https://www.youtube.com/')">YOUTUBE</button>
  </div>
 </section>
 
@@ -1173,6 +1203,44 @@ function closeScreens(){
  setTimeout(()=>{if(gpsMap)gpsMap.invalidateSize();},150);
 }
 function go(url){ window.open(url,'_blank'); }
+let musicTracks=[];
+let musicIndex=-1;
+let musicObjectUrls=[];
+function loadMusicFiles(files){
+ const audio=$('musicAudio');
+ if(!files||!files.length)return;
+ musicObjectUrls.forEach(URL.revokeObjectURL);
+ musicObjectUrls=[];
+ musicTracks=Array.from(files).filter(f=>f.type.startsWith('audio/')).map(file=>({name:file.name,file,url:URL.createObjectURL(file)}));
+ musicObjectUrls=musicTracks.map(t=>t.url);
+ musicIndex=musicTracks.length?0:-1;
+ renderMusicPlaylist();
+ if(musicIndex>=0)playMusicTrack(musicIndex);
+}
+function renderMusicPlaylist(){
+ const list=$('musicPlaylist');
+ if(!musicTracks.length){list.innerHTML='<p class="note">Nenhuma música adicionada.</p>';return;}
+ list.innerHTML=musicTracks.map((t,i)=>'<div class="music-row '+(i===musicIndex?'active':'')+'"><span>'+(i+1)+'. '+escapeMusicText(t.name)+'</span><button type="button" onclick="playMusicTrack('+i+')">▶</button></div>').join('');
+}
+function escapeMusicText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function playMusicTrack(index){
+ if(index<0||index>=musicTracks.length)return;
+ musicIndex=index;
+ const track=musicTracks[index],audio=$('musicAudio');
+ audio.src=track.url;
+ $('musicTrackName').textContent=track.name;
+ $('musicTrackMeta').textContent='Faixa '+(index+1)+' de '+musicTracks.length;
+ renderMusicPlaylist();
+ audio.play().catch(()=>{$('musicTrackMeta').textContent='Toque em reproduzir para iniciar';});
+}
+function toggleMusicPlayback(){
+ const audio=$('musicAudio');
+ if(!audio.src){alert('Adicione músicas do celular primeiro.');return;}
+ if(audio.paused)audio.play().catch(()=>{});else audio.pause();
+}
+function nextMusicTrack(){if(musicTracks.length)playMusicTrack((musicIndex+1)%musicTracks.length);}
+function previousMusicTrack(){if(musicTracks.length)playMusicTrack((musicIndex-1+musicTracks.length)%musicTracks.length);}
+
 async function choosePhoneContact(){
  try{
   if(window.MoraisNative && typeof window.MoraisNative.openContacts==='function'){
