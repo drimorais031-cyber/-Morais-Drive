@@ -90,7 +90,7 @@ class MainActivity : Activity() {
                 }
             } else {
                 val telecom = getSystemService(TELECOM_SERVICE) as TelecomManager
-                val changeDefault = Intent(TelecomManager.ACTION_CHANGE_DEFAULT).apply {
+                val changeDefault = Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
                     putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, packageName)
                 }
                 startActivity(changeDefault)
