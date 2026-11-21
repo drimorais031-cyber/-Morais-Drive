@@ -725,8 +725,9 @@ input,select{
   <h3>Fazer ligação</h3>
   <label>Número de telefone</label>
   <input id="phoneNumber" type="tel" placeholder="Digite o número">
+  <button class="action alt" onclick="choosePhoneContact()">👥 CONTATOS DO CELULAR</button>
   <button class="action" onclick="callNumber()">LIGAR</button>
-  <p class="note">A chamada depende do suporte do aparelho e das permissões do navegador. O aplicativo não acessa automaticamente seus contatos.</p>
+  <p class="note">Escolha um contato da agenda do aparelho ou digite o número. O acesso aos contatos só ocorre quando você toca no botão e autoriza a seleção.</p>
  </div>
 </section>
 
@@ -1172,8 +1173,28 @@ function closeScreens(){
  setTimeout(()=>{if(gpsMap)gpsMap.invalidateSize();},150);
 }
 function go(url){ window.open(url,'_blank'); }
+async function choosePhoneContact(){
+ try{
+  if(window.MoraisNative && typeof window.MoraisNative.openContacts==='function'){
+   window.MoraisNative.openContacts();
+   return;
+  }
+  if(!navigator.contacts || typeof navigator.contacts.select!=='function'){
+   alert('A seleção direta de contatos não é compatível com este navegador. Use o Chrome atualizado para Android ou digite o número manualmente.');
+   return;
+  }
+  const selected=await navigator.contacts.select(['name','tel'],{multiple:false});
+  if(!selected || !selected.length)return;
+  const contact=selected[0];
+  const phones=contact.tel||[];
+  if(!phones.length){alert('Este contato não possui número de telefone.');return;}
+  $('phoneNumber').value=phones[0];
+ }catch(error){
+  if(error && error.name!=='AbortError') alert('Não foi possível abrir os contatos. Verifique a permissão do navegador.');
+ }
+}
 function callNumber(){
- const number=$('phoneNumber').value.replace(/[^\d+]/g,'');
+ const number=$('phoneNumber').value.replace(/[^\\d+]/g,'');
  if(!number){alert('Digite um número de telefone.');return;}
  location.href='tel:'+number;
 }
