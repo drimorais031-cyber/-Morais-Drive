@@ -922,7 +922,7 @@ function updateColorPicker(color){
 function updateCarImage(){
  const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
  const color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
- const art=carImageFor(model,color)|| (model==='Chevrolet Onix'?'./onix-garage.webp':makeCarArt(model,color));
+ const art=carImageFor(model,color)|| (model==='Hyundai HB20'?'./hb20_cinza.png':(model==='Chevrolet Onix'?'./onix-garage.webp':makeCarArt(model,color)));
  $('heroCar').src=art;
  $('settingsCar').src=art;
  $('heroCar').style.objectFit='contain';
