@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "morais-drive-v34";
+const CACHE_NAME = "morais-drive-v35";
 
 const FILES = [
   "./onix_preto.jpg",
@@ -60,9 +60,21 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
+  // Para páginas HTML, sempre tenta buscar a versão publicada antes do cache antigo.
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request, { cache: "no-store" })
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy)).catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request);
-    })
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
