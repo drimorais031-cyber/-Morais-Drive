@@ -15,9 +15,13 @@ android {
         versionName = "1.2.0"
     }
 
-    dependencies {\n        implementation("androidx.car.app:app:1.7.0")\n    }\n\n    compileOptions {
+    compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+}
+
+dependencies {
+    implementation("androidx.car.app:app:1.7.0")
 }
