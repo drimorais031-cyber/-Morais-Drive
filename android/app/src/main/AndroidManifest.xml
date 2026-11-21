@@ -13,8 +13,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/morais_launcher"
-        android:roundIcon="@drawable/morais_launcher"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="Morais Drive"
         android:theme="@android:style/Theme.Material.NoActionBar"
         android:usesCleartextTraffic="false">
