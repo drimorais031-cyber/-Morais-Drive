@@ -892,11 +892,27 @@ function selectGarageModel(model){
  $('modelo').value=model;
  updateCarImage();
 }
-function renderModelGallery(selectedModel){
+const garageAssets={
+ 'Chevrolet Onix':{'Branco':'./file_000000007074820e94f75f049f6ee1fe.png','Vermelho':'./onix-garage.webp'},
+ 'Hyundai HB20':{'Cinza':'./hb20_cinza.png'},
+ 'Fiat Argo':{'Branco':'./argo_branco.png','Cinza':'./argo_cinza.png','Preto':'./argo_preto.png','Vermelho':'./argo_vermelho.png'},
+ 'Renault Kwid':{'Branco':'./kwid_branco.png','Cinza':'./kwid_cinza.png','Preto':'./kwid_preto.png','Vermelho':'./kwid_vermelho.png'},
+ 'Fiat Mobi':{'Branco':'./mobi_branco.png','Cinza':'./mobi_cinza.png','Preto':'./mobi_preto.png','Vermelho':'./mobi_vermelho.png'}
+};
+function carImageFor(model,color){
+ const variants=garageAssets[model]||{};
+ return variants[color]||null;
+}
+function renderModelGallery(selectedModel,color){
  const gallery=$('modelGallery');
  if(!gallery)return;
- const active=selectedModel==='Chevrolet Onix'?' active':'';
- gallery.innerHTML='<button type="button" class="model-option'+active+'" onclick="selectGarageModel(\'Chevrolet Onix\')"><img alt="Chevrolet Onix frontal" src="./onix-garage.webp"><span>ONIX</span></button>';
+ const models=['Chevrolet Onix','Hyundai HB20','Fiat Argo','Fiat Mobi','Renault Kwid'];
+ gallery.innerHTML=models.map(model=>{
+  const image=carImageFor(model,color)||carImageFor(model,'Cinza')||carImageFor(model,'Branco')||'';
+  const active=model===selectedModel?' active':'';
+  const fallback=image||makeCarArt(model,color);
+  return '<button type="button" class="model-option'+active+'" onclick="selectGarageModel(\''+model+'\')"><img alt="'+model+' frontal" src="'+fallback+'"><span>'+model.replace('Chevrolet ','').replace('Hyundai ','').replace('Fiat ','').replace('Renault ','').toUpperCase()+'</span></button>';
+ }).join('');
 }
 function updateColorPicker(color){
  document.querySelectorAll('.color-swatch').forEach(button=>{
@@ -906,7 +922,7 @@ function updateColorPicker(color){
 function updateCarImage(){
  const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
  const color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
- const art=model==='Chevrolet Onix'?(color==='Branco'?'./file_000000007074820e94f75f049f6ee1fe.png':'./onix-garage.webp'):makeCarArt(model,color);
+ const art=carImageFor(model,color)|| (model==='Chevrolet Onix'?'./onix-garage.webp':makeCarArt(model,color));
  $('heroCar').src=art;
  $('settingsCar').src=art;
  $('heroCar').style.objectFit='contain';
