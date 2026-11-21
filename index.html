@@ -1523,7 +1523,11 @@ function importBackup(){
 loadVehicle();
 showKm();
 if('serviceWorker' in navigator){
- window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+ window.addEventListener('load',()=>{
+  navigator.serviceWorker.register('service-worker.js?v=35',{updateViaCache:'none'})
+   .then(reg=>reg.update().catch(()=>{}))
+   .catch(()=>{});
+ });
 }
 </script>
 </body>
