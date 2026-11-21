@@ -299,7 +299,8 @@ input,select{
 .model-option.active{border:1px solid #ff303b;box-shadow:0 0 12px #ff303b66;background:linear-gradient(160deg,#48232c,#141b25);color:#fff}
 @media(max-width:420px){.model-gallery{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.model-option{font-size:9px;padding:5px 2px}.model-option img{height:48px}}
 .color-picker{
- display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;margin:12px 0 4px;
+ display:grid;grid-template-columns:repeat(2,76px);justify-content:start;align-content:start;
+ gap:8px;margin:12px 0 4px;width:max-content;max-width:100%;
 }
 .color-swatch{
  min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;
@@ -317,7 +318,7 @@ input,select{
  border-radius:10px;background:#101821;color:#cbd3dd;font-size:11px;
 }
 .garage-status strong{color:#ff5962;letter-spacing:1px}
-@media(max-width:420px){.color-picker{gap:5px}.color-swatch{font-size:8px}.color-swatch i{width:24px;height:24px}.car-preview{height:215px}}
+@media(max-width:420px){.color-picker{grid-template-columns:repeat(2,76px);gap:6px}.color-swatch{font-size:8px}.color-swatch i{width:24px;height:24px}.car-preview{height:215px}}
 
 .note{
  color:var(--muted);
@@ -883,7 +884,8 @@ function makeCarArt(model,color){
  return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
 }
 function chooseCarColor(color){
- $('cor').value=color;
+ const model=$('modelo')?.value||'Chevrolet Onix';
+ $('cor').value=(model==='Chevrolet Onix'&&color==='Cinza'&&garageAssets[model]?.Prata)?'Prata':color;
  updateCarImage();
 }
 function selectGarageModel(model){
@@ -918,25 +920,25 @@ function renderModelGallery(selectedModel,color){
 }
 function updateColorPicker(color){
  const model=$('modelo')?.value||'Chevrolet Onix';
- const available=availableCarColors(model);
+ const variants=garageAssets[model]||{};
  const picker=$('colorPicker');
  if(!picker)return;
+ const allowed=['Branco','Cinza','Vermelho','Preto'];
  const paints={
   'Branco':'#f2f3f4',
   'Preto':'#15191f',
-  'Prata':'#aeb8c2',
   'Cinza':'#626d79',
-  'Vermelho':'#e52335',
-  'Azul':'#1767b1',
-  'Outra':'linear-gradient(135deg,#23a7a0,#9a53c7,#e8b13d)'
+  'Vermelho':'#e52335'
  };
+ const available=allowed.filter(name=>variants[name]||(name==='Cinza'&&variants['Prata']));
+ const selected=color==='Prata'?'Cinza':color;
  picker.innerHTML=available.map(name=>
-  '<button type="button" class="color-swatch'+(name===color?' active':'')+
+  '<button type="button" class="color-swatch'+(name===selected?' active':'')+
   '" data-color="'+name+'" onclick="chooseCarColor(\''+name+'\')">'+
   '<i style="background:'+paints[name]+'"></i>'+name.toUpperCase()+'</button>'
  ).join('');
- picker.style.gridTemplateColumns='repeat('+Math.min(available.length,7)+',minmax(0,1fr))';
 }
+
 function updateCarImage(){
  const model=$('modelo')?.value||localStorage.getItem('modelo')||'Chevrolet Onix';
  let color=$('cor')?.value||localStorage.getItem('cor')||'Branco';
